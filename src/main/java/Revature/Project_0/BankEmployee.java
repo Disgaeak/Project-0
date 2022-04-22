@@ -14,8 +14,8 @@ public class BankEmployee extends BankAdmin
 	{
 		boss = ProjectDriver.boss;
 		//account menu for the employee
-		System.out.println("please select an option:" + "\n" + "1- View account" + "\n" + "2- View customer account" + "\n" + "3- Check applications"
-				+ "\n" + "4- log off");
+		System.out.println("please select an option:" + "\n" + "1- View account" + "\n" + "2- View customer account" + "\n" + "3- View customer Savings"
+				+ "\n" + "4- View Customer Joint Account" + "\n" + "5- View Applications" + "\n" + "6- log off");
 		scanInt = myObj.nextInt();
 		
 		switch(scanInt)
@@ -24,12 +24,17 @@ public class BankEmployee extends BankAdmin
 			viewAccount();
 			break;
 		case 2:
-			viewAccount(customers.get(0));
+			
 			break;
 		case 3:
-			boss.checkApplications(this);
+			
 			break;
 		case 4:
+			break;
+		case 5:
+			boss.checkApplications(this);
+			break;
+		case 6:
 			System.out.println("now logging off");
 			ProjectDriver.LoginMenu();
 			break;
@@ -45,7 +50,8 @@ public class BankEmployee extends BankAdmin
 	
 	public void viewAccount(BankCustomer n)
 	{
-		System.out.println("First name: " + n.firstName + "\n" + "Last Name: " + n.lastName);
+		System.out.println("First name: " + n.firstName + " " + n.lastName + "\n" + "Username: " + n.userName + "\n" 
+				+ "Account #: " + n.accountNum + " " + n.routNum + "\n" + "Balance: $" + n.balance + "\n" + "Joint #: " + n.jointNum);
 		accountMenu();
 	}
 }

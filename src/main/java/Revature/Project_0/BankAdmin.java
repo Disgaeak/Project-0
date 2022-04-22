@@ -2,20 +2,16 @@ package Revature.Project_0;
 
 import RevCustom.BankCustomer;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Scanner;
+
+import DataBase.CustomerDAO;
+import DataBase.CustomerModel;
 
 public class BankAdmin implements ImpBanking
 {
 	//for all classes
 	public String firstName;
 	public String lastName;
-	public ArrayList<BankCustomer> customers = new ArrayList<BankCustomer>();
-	public Map<Integer, Double> customerSavings = new HashMap<>();
-	public Map<Integer, BankCustomer> customerJoints = new HashMap<>();
-	public ArrayList<BankCustomer> customerApplications = new ArrayList<BankCustomer>();
-	public ArrayList<BankEmployee> employees = new ArrayList<BankEmployee>();
 	
 	//bank only class
 	public int bankCode;
@@ -23,6 +19,8 @@ public class BankAdmin implements ImpBanking
 	//for this class
 	private Scanner myObj = new Scanner(System.in);
 	private int scanInt;
+	private CustomerDAO cdao = new CustomerDAO();
+	private BankCustomer bc;
 	
 	@Override
 	public void accountMenu() 
@@ -38,10 +36,10 @@ public class BankAdmin implements ImpBanking
 			viewAccount();
 			break;
 		case 2:
-			viewAccount(employees.get(0));
+			
 			break;
 		case 3:
-			viewAccount(customers.get(0));
+			
 			break;
 		case 4:
 			checkApplications();
@@ -58,14 +56,17 @@ public class BankAdmin implements ImpBanking
 	}
 	
 	//Admin only method to view a specific account
-	private void viewAccount(BankCustomer name)
+	public void viewAccount(BankCustomer name)
 	{
-		System.out.println("First name: " + name.firstName + "\n" + "Last Name: " + name.lastName);
+		System.out.println("First name: " + name.firstName + " " + name.lastName + "\n" + "Username: " + name.userName + "\n" 
+				+ "Account #: " + name.accountNum + " " + name.routNum + "\n" + "Balance: $" + name.balance + "\n" + "Joint #: " + name.jointNum);
+		accountMenu();
 	}
 	
 	private void viewAccount(BankEmployee name)
 	{
 		System.out.println("First name: " + name.firstName + "\n" + "Last Name: " + name.lastName);
+		accountMenu();
 	}
 	
 	@Override
@@ -76,27 +77,27 @@ public class BankAdmin implements ImpBanking
 	}
 	
 	//check if any applications to open account are available and either accept or deny or pending
-	public void checkApplications()
+	private void checkApplications()
 	{
-		if(customerApplications.size() != 0)
+		bc = cdao.searchCustomers(2);
+		
+		if(bc != null)
 		{
-			viewAccount(customerApplications.get(0));
-			System.out.println("Do you wish to Accept account?" + "\n" + "press 0 to deny, 1 to accept, 2 to leave pending");
+			viewAccount(bc);
+			System.out.println("Do you wish to Accept account?" + "\n" + "press 0 to deny, 1 to accept");
 			int in = myObj.nextInt();
+			
 			switch(in) 
 			{
 			case 0:
-				customerApplications.get(0).validAccount = 0;
-				customers.add(customerApplications.get(0));
-				customerApplications.remove(0);
+				bc.validAccount = 0;
+				cdao.UpdateCustomer((CustomerModel)bc);
+				checkApplications();
 				break;
 			case 1:
-				customerApplications.get(0).validAccount = 1;
-				customers.add(customerApplications.get(0));
-				customerApplications.remove(0);
-				break;
-			case 2:
-				customerApplications.get(0).validAccount = 2;
+				bc.validAccount = 1;
+				cdao.UpdateCustomer((CustomerModel)bc);
+				checkApplications();
 				break;
 			default:
 				System.out.println("Not a valid answer. Now logging off");
@@ -108,33 +109,28 @@ public class BankAdmin implements ImpBanking
 			System.out.println("There are no pending applications.");
 			accountMenu();
 		}
-		
-		accountMenu();
 	}
 	
 	//check if any applications to open account are available and either accept or deny or pending
 	public void checkApplications(BankEmployee k)
 	{
-		if(customerApplications.size() != 0)
+		bc = cdao.searchCustomers(2);
+		
+		if(bc != null)
 		{
-			viewAccount(customerApplications.get(0));
-			System.out.println("Do you wish to Accept account?" + "\n" + "press 0 to deny, 1 to accept, 2 to leave pending");
+			viewAccount(bc);
+			System.out.println("Do you wish to Accept account?" + "\n" + "press 0 to deny, 1 to accept");
 			int in = myObj.nextInt();
 			
 			switch(in) 
 			{
 			case 0:
-				customerApplications.get(0).validAccount = 0;
-				customers.add(customerApplications.get(0));
-				customerApplications.remove(0);
+				bc.validAccount = 0;
+				checkApplications();
 				break;
 			case 1:
-				customerApplications.get(0).validAccount = 1;
-				customers.add(customerApplications.get(0));
-				customerApplications.remove(0);
-				break;
-			case 2:
-				customerApplications.get(0).validAccount = 2;
+				bc.validAccount = 1;
+				checkApplications();
 				break;
 			default:
 				System.out.println("Not a valid answer. Now logging off");
@@ -146,8 +142,6 @@ public class BankAdmin implements ImpBanking
 			System.out.println("There are no pending applications.");
 			k.accountMenu();
 		}
-		
-		k.accountMenu();
 	}
 	
 	//deposits money into a customer account
@@ -155,23 +149,11 @@ public class BankAdmin implements ImpBanking
 	{
 		System.out.println("Which customer?");
 		//TODO: have it loop through all customers and select manually
-		BankCustomer k = customers.get(0);
 		
 		//input the amount deposited in account
 		System.out.println("Please Enter amount you want to deposit");
 		double money = myObj.nextDouble();
 		
-		//checks for negative input to deposit
-		if(k.balance < k.balance + money)
-		{
-			System.out.println("The amount is less than current");
-			accountMenu();
-		}
-		else
-		{
-			k.balance += money;
-			System.out.println("The amount has been added to their account");
-			accountMenu();
-		}
+		
 	}
 }

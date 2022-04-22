@@ -1,42 +1,33 @@
 package Revature.Project_0;
 
 import RevCustom.BankCustomer;
+
 import java.util.Scanner;
+import DataBase.CustomerDAO;
 
 public class ProjectDriver 
 {
 	private static BankCustomer customer = new BankCustomer();
 	private static BankEmployee bE = new BankEmployee();
 	public static BankAdmin boss = new BankAdmin();
-	private static BankCustomer temp;
 	private static String userName;
 	private static Scanner myObj = new Scanner(System.in); 
-	
+	private static CustomerDAO cdao = new CustomerDAO();
 	
 	public static void main(String[] args) 
-	{
+	{	
+		
 		//Hire 1 employee
 		bE.firstName = "Robert";
 		bE.lastName = "Dover";
 		bE.bankCode = 1234;
-		boss.employees.add(bE);
 		
 		//create 1 Admin
 		boss.firstName = "John";
 		boss.lastName = "Wilhelm";
 		boss.bankCode = 5647;
 		
-		//create customer
-		BankCustomer n = new BankCustomer();
-		n.firstName = "John";
-		n.lastName = "Wayne";
-		n.userName = "forver";
-		n.passWord = "jjabrams";
-		n.accountNum = 1000200;
-		n.routNum = 1000002;
-		n.validAccount = 1;
-		
-		boss.customers.add(n);
+		//cdao.setJoint(new JointModel(n.jointNum, n.firstName,n.lastName, 0.0));
 		
 		LoginMenu();
 	}
@@ -53,56 +44,33 @@ public class ProjectDriver
 		{
 			customer.openAccount();
 		}
-		else if(checkCustomer(userName))
+		else if(cdao.bIsCustomer(userName))
 		{
-			//checks if the input username is a customer (accepted or denied)
-			for(int i = 0;i < boss.customers.size();i++)
+			//gets customer with username
+			BankCustomer sc = cdao.searchCustomers(userName);
+			
+			switch(sc.validAccount)
 			{
-				if(userName.equals(boss.customers.get(i).userName))
+			case 0:
+				System.out.println("Your account has been canceled");
+				LoginMenu();
+				break;
+			case 1:
+				System.out.println("please enter password.");
+				userName = myObj.nextLine();
+				
+				if(sc.passWord.equals(userName))
+					sc.accountMenu();
+				else
 				{
-					//when found username ask for password
-					temp = boss.customers.get(i);
-					System.out.println("please enter password.");
-					userName = myObj.nextLine();
-					
-					//checks if password is correct
-					if(userName.equals(temp.passWord))
-					{
-						//check if their account is valid or not
-						if(temp.validAccount == 1)
-							temp.accountMenu();
-						else
-							System.out.println("The account has been denied");
-					}
-					else
-					{
-						System.out.println("The password is incorrect.");
-						break;
-					}
+					System.out.println("The password is incorrect.");
+					LoginMenu();
 				}
-			}
-		}
-		else if(checkPending(userName))
-		{
-			//if application is still pending find customer and let them know
-			for(int i = 0;i < boss.customerApplications.size();i++)
-			{
-				if(userName.equals(boss.customerApplications.get(i).userName))
-				{
-					//when found username ask for password
-					temp = boss.customerApplications.get(i);
-					System.out.println("please enter password.");
-					userName = myObj.nextLine();
-					
-					//checks if password is correct
-					if(userName.equals(temp.passWord))
-						temp.viewAccount();
-					else
-					{
-						System.out.println("The password is incorrect.");
-						break;
-					}
-				}
+				break;
+			case 2:
+				System.out.println("Your account is still pending");
+				LoginMenu();
+				break;
 			}
 		}
 		else
@@ -131,47 +99,6 @@ public class ProjectDriver
 				else
 					System.out.println("No username found.");
 			}
-			
 		}
-	}
-	
-	public static boolean checkCustomer(String val)
-	{
-		boolean hasFound = false;
-		
-		//checks if the input username is a customer
-		if(boss.customers.size() != 0)
-		{
-			for(int i = 0;i < boss.customers.size();i++)
-			{
-				if(val.equals(boss.customers.get(i).userName))
-				{
-					hasFound = true;
-					break;
-				}
-			}
-		}
-			
-		return hasFound;
-	}
-	
-	public static boolean checkPending(String val)
-	{
-		boolean hasFound = false;
-		
-		//checks if the input username is still pending
-		if(boss.customerApplications.size() != 0)
-		{
-			for(int i = 0;i < boss.customerApplications.size();i++)
-			{
-				if(val.equals(boss.customerApplications.get(i).userName))
-				{
-					hasFound = true;
-					break;
-				}	
-			}
-		}
-		
-		return hasFound;
 	}
 }

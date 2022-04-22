@@ -5,8 +5,10 @@ import Revature.Project_0.ImpBanking;
 import Revature.Project_0.ProjectDriver;
 
 import java.util.ArrayList;
-import java.util.Map;
 import java.util.Scanner;
+
+import DataBase.CustomerDAO;
+import DataBase.CustomerModel;
 
 public class BankCustomer implements ImpBanking
 {
@@ -31,7 +33,8 @@ public class BankCustomer implements ImpBanking
 	private String input;
 	private double scandoub;
 	private int scanInt;
-	private boolean s = false;
+	private static CustomerDAO cdao = new CustomerDAO();
+	private BankCustomer hold;
 	
 	@Override
 	public void accountMenu() 
@@ -40,7 +43,7 @@ public class BankCustomer implements ImpBanking
 		
 		//account menu for the customer who logged in(not for admin or employee)
 		System.out.println("please select an option:" + "\n" + "1- View account" + "\n" + "2- Deposit amount" + "\n" + "3- Withdraw amount"
-				+ "\n" + "4- Savings" + "\n" + "5- View/ create Joint account" + "\n" + "6- log off");
+				+ "\n" + "4- Savings" + "\n" + "5- Joint account" + "\n" + "6- log off");
 		scanInt = myObj.nextInt();
 		
 		switch(scanInt)
@@ -71,26 +74,10 @@ public class BankCustomer implements ImpBanking
 	@Override
 	public void viewAccount() 
 	{
-		//check info on account
-		switch(validAccount)
-		{
-		case 0:
-			//account application has been denied
-			System.out.println("Your application has been denied");
-			break;
-		case 1:
-			//account has been accepted
-			System.out.println("First name: " + firstName + "\n" + "Last Name: " + lastName + "\n" + "username: " + userName + 
-					"\n" + "Account Number: " + accountNum + "\n" + "Routing Number: " + routNum + "\n" + "Balance: $" + balance);
-			accountMenu();
-			break;
-		case 2:
-			//account is still pending
-			System.out.println("Your account application is still pending. Please wait.");
-			break;
-		default:
-			
-		}
+		//account has been accepted
+		System.out.println("First name: " + firstName + "\n" + "Last Name: " + lastName + "\n" + "username: " + userName + 
+				"\n" + "Account Number: " + accountNum + "\n" + "Routing Number: " + routNum + "\n" + "Balance: $" + balance);
+		accountMenu();
 	}
 	
 	public void openAccount()
@@ -115,19 +102,27 @@ public class BankCustomer implements ImpBanking
 		
 		//makes a unique account number
 		nCustomer.accountNum = RNG();
-		while(admin.customerSavings.containsKey(nCustomer.accountNum))
+		while(cdao.getCustomers().contains(nCustomer.accountNum))
 			nCustomer.accountNum = RNG();
 		
-		//checks if account and routing number are different
+		//makes unique routing number
 		nCustomer.routNum = RNG();
-		while(nCustomer.accountNum == nCustomer.routNum)
+		while(cdao.getCustomers().contains(nCustomer.routNum))
 			nCustomer.routNum = RNG();
 		
-		admin.customerApplications.add(nCustomer);
+		//makes a unique joint number
+		nCustomer.jointNum = RNG();
+		while(cdao.getCustomers().contains(nCustomer.jointNum))
+			nCustomer.routNum = RNG();
+		
+		//acc#, firstname, lastname, username, password, rout#, balance, savebalance, joint#, validation
+		cdao.setCustomer(new CustomerModel(nCustomer.accountNum, nCustomer.firstName, nCustomer.lastName, nCustomer.userName, nCustomer.passWord,
+				nCustomer.routNum, 0.0, 0.0, nCustomer.jointNum, 2));
+		
 		ProjectDriver.LoginMenu();
 	}
 	
-	private int RNG()
+	public int RNG()
 	{
 		int n;
 		int min = 1000000;
@@ -153,7 +148,9 @@ public class BankCustomer implements ImpBanking
 			{
 				saveBalance += scandoub;
 				balance -= scandoub;
-				admin.customerSavings.put(accountNum, saveBalance);
+				
+				//updates information by casting customer to customer model
+				cdao.UpdateCustomer((CustomerModel)this);
 				System.out.println("The amount has been added to your account.");
 				openSavings();
 			}
@@ -171,6 +168,9 @@ public class BankCustomer implements ImpBanking
 				scandoub = Math.abs(scandoub);
 			
 			balance += scandoub;
+			
+			//updates information by casting customer to customer model
+			cdao.UpdateCustomer((CustomerModel)this);
 			System.out.println("The amount has been added to your account");
 			accountMenu();
 		}
@@ -178,19 +178,17 @@ public class BankCustomer implements ImpBanking
 	
 	public void openSavings()
 	{
-		Map<Integer, Double> h = admin.customerSavings;
-		
-		if(h.containsKey(accountNum))
+		if(cdao.bHasSavings(accountNum))
 		{
 			//savings menu for the customer
-			System.out.println("please select an option:" + "\n" + "1- View Balance/ open account" + "\n" + "2- Deposit into Savings" + "\n" 
+			System.out.println("please select an option:" + "\n" + "1- View Balance" + "\n" + "2- Deposit into Savings" + "\n" 
 					+ "3- Withdraw from Savings" + "\n" + "4- Return");
 			scanInt = myObj.nextInt();
 			
 			switch(scanInt)
 			{
 			case 1:
-				//views current balance, if they dont have a savings, then create one
+				//views current balance
 				System.out.println("Balance: $" + saveBalance);
 				openSavings();
 				break;
@@ -212,126 +210,103 @@ public class BankCustomer implements ImpBanking
 		else
 		{
 			//you dont have a savings
-			System.out.println("You have added a savings account");
-			admin.customerSavings.put(accountNum, 0.0);
-			openSavings();
+			System.out.println("You Don't have a savings account. Would you like to make one? Yes/No");
+			input = myObj.next();
+			
+			if(input.equalsIgnoreCase("Yes"))
+			{
+				cdao.setSavings(accountNum);
+				System.out.println("Savings account has been created.");
+				accountMenu();
+			}
+			else
+				accountMenu();
 		}
 	}
 	
 	private void openJoint() 
 	{
-		//checks if user has a joint account
-		if(admin.customerJoints.containsKey(jointNum))
+		BankCustomer jc = cdao.searchJointCustomers(jointNum);
+		
+		if(jc != null)
 		{
-			BankCustomer c = admin.customerJoints.get(jointNum);
-			
 			//menu for joint account
-			System.out.println("Joint Account menu: " + "\n" + "1- View Balance" + "\n" + "2- View Members" + "\n" + "3- Deposit" 
-					+ "\n" + "4-Withdraw" + "\n" + "5- Log off");
-			
+			System.out.println("Joint Account menu: " + "\n" + "1- View Balance" + "\n" + "2- Deposit" 
+					+ "\n" + "3- Withdraw" + "\n" + "4- Log off");
 			scanInt = myObj.nextInt();
 			
 			switch(scanInt)
 			{
 			case 1:
-				//view balance
-				System.out.println(c.balance);
+				System.out.println("Main Owner: " + jc.firstName + " " + jc.lastName
+						+ "\n" + "Balance: $" + jc.balance);
+				openJoint();
 				break;
 			case 2:
-				//get all members linked in this joint account
-				for(int i = 0;i < c.JointName.size();i++)
-				{
-					System.out.println(c.JointName.get(i) + "\n");
-				}
-				break;
-			case 3:
-				//deposit money from the signed in customer balance to the joint balance
-				
-				System.out.println("Enter the amount you want to deposit");
+				System.out.println("Please Enter the Amount you wish to deposit.");
 				scandoub = myObj.nextDouble();
 				
-				if(scandoub > balance || scandoub < 0)
+				if(balance > scandoub && scandoub > 0)
 				{
-					System.out.println("You don't have sufficient funds.");
+					balance -= scandoub;
+					jc.balance += scandoub;
+					cdao.UpdateJoint((CustomerModel) jc);
+					cdao.UpdateCustomer((CustomerModel)this);
+					System.out.println("The amount has been deposited.");
 					openJoint();
 				}
 				else
 				{
-					balance -= scandoub;
-					c.balance += scandoub;
+					System.out.println("The amount is incorrect.");
+					openJoint();
+				}
+				break;
+			case 3:
+				System.out.println("Please Enter the Amount you wish to withdraw.");
+				scandoub = myObj.nextDouble();
+				
+				if(jc.balance > scandoub && scandoub > 0)
+				{
+					balance += scandoub;
+					jc.balance -= scandoub;
+					cdao.UpdateJoint((CustomerModel)jc);
+					cdao.UpdateCustomer((CustomerModel)this);
+					System.out.println("The amount has been withdrawn.");
+					openJoint();
+				}
+				else
+				{
+					System.out.println("The amount is incorrect.");
 					openJoint();
 				}
 				break;
 			case 4:
-				//withdraw money from joint balance into the signed in customer balance
-				
-				System.out.println("Enter the amount you want to withdraw");
-				scandoub = myObj.nextDouble();
-				
-				if(scandoub > c.balance || scandoub < 0)
-				{
-					System.out.println("You don't have sufficient funds.");
-					openJoint();
-				}
-				else
-				{
-					balance += scandoub;
-					c.balance -= scandoub;
-					openJoint();
-				}
-				break;
-			case 5:
 				accountMenu();
 				break;
-			default:
-				openJoint();
+				default:
+					accountMenu();
 			}
 		}
 		else
 		{
-			System.out.println("You do not have a joint account. Please fill in the information to create a joint account.");
+			System.out.println("Please Enter the username to add to the joint account.");
+			input = myObj.next();
 			
-			//sets up information for the new account
-			BankCustomer nCustomer = new BankCustomer();
-			nCustomer.firstName = firstName;
-			nCustomer.lastName = lastName;
-			
-			//makes a unique joint account number
-			nCustomer.jointNum = RNG();
-			while(admin.customerJoints.containsKey(nCustomer.jointNum))
-				nCustomer.jointNum = RNG();			
-			
-			do
+			hold = cdao.searchCustomers(input);
+			if(hold != null)
 			{
-				System.out.println("Please enter the account Number of the person/s that will join");
-				scanInt = myObj.nextInt();
-				
-				for(int i = 0;i < admin.customers.size();i++)
-				{
-					if(scanInt == admin.customers.get(i).accountNum)
-					{
-						nCustomer.JointName.add(admin.customers.get(i).firstName + " " + admin.customers.get(i).lastName);
-						break;
-					}
-					else
-					{
-						System.out.println("The account number is incorrect");
-						accountMenu();
-					}
-				}
-				
-				System.out.println("Would you like to add more?" + "\n" + "Yes/No");
-				input = myObj.nextLine();
-				
-				if(input.equalsIgnoreCase("Yes"))
-					s  = true;
-				else
-					s = false;
-			}while(s);
-			
-			//adds the customer to joint list
-			admin.customerJoints.put(nCustomer.jointNum, nCustomer);
+				hold.jointNum = this.jointNum;
+				cdao.setJoint((CustomerModel)this);
+				cdao.UpdateCustomer((CustomerModel)hold);
+				openJoint();
+			}
+			else
+			{
+				System.out.println("That username does't exist.");
+				openJoint();
+			}
 		}
+		
 	}
 	
 	//withdraws money from either checking or savings
@@ -348,7 +323,8 @@ public class BankCustomer implements ImpBanking
 			{
 				saveBalance -= scandoub;
 				balance += scandoub;
-				admin.customerSavings.put(accountNum, saveBalance);
+				//updates information by casting customer to customer model
+				cdao.UpdateCustomer((CustomerModel)this);
 				System.out.println("The amount has been added to your account.");
 				openSavings();
 			}
@@ -369,6 +345,8 @@ public class BankCustomer implements ImpBanking
 			else
 			{
 				balance -= scandoub;
+				//updates information by casting customer to customer model
+				cdao.UpdateCustomer((CustomerModel)this);
 				System.out.println("The amount has been taken from your account");
 				accountMenu();
 			}

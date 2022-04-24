@@ -4,8 +4,6 @@ import RevCustom.BankCustomer;
 
 public class CustomerModel extends BankCustomer
 {
-	
-	
 	//constructor for setting data
 	public CustomerModel(int accNum, String nfirst, String nLast, String uName, String passW, int rNum, double bal, double sBal,
 			int jNum, int validy)

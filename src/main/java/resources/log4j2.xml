@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="INFO">
+	<Properties>
+		<property name="filename">./logs </property>
+	</Properties>
+	<Appenders>
+		<RollingFile name="file"
+			fileName="${filename}/logs.log"
+			filePattern="${filename}/logs-%d{HH:mm:ss}.log">
+			<PatternLayout>
+				<pattern>%d{yyyy-MM-dd-HHmm} [%t] %-5level - %msg%n</pattern>
+			</PatternLayout>
+			<SizeBasedTriggeringPolicy size="100 MB" />
+		</RollingFile>
+		<Console name="Console" target="SYSTEM_OUT">
+			<PatternLayout
+				pattern="%d{yyyy-MM-dd-HHmm} [%t] %-5level %logger{36} - %msg%n" />
+		</Console>
+	</Appenders>
+	<Loggers>
+		<Logger name="Revature.Project_0" level="info" additivity="false">
+			<AppenderRef ref="file" />
+		</Logger>
+		<Root level="trace">
+			<AppenderRef ref="Console" />
+		</Root>
+	</Loggers>
+</Configuration>

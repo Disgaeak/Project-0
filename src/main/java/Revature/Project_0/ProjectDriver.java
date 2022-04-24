@@ -1,18 +1,23 @@
 package Revature.Project_0;
 
 import RevCustom.BankCustomer;
-
 import java.util.Scanner;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import DataBase.CustomerDAO;
 
 public class ProjectDriver 
 {
 	private static BankCustomer customer = new BankCustomer();
-	private static BankEmployee bE = new BankEmployee();
+	public static BankEmployee bE = new BankEmployee();
 	public static BankAdmin boss = new BankAdmin();
 	private static String userName;
 	private static Scanner myObj = new Scanner(System.in); 
 	private static CustomerDAO cdao = new CustomerDAO();
+	
+	public static Logger demo = LogManager.getLogger(ProjectDriver.class);
 	
 	public static void main(String[] args) 
 	{	
@@ -27,7 +32,14 @@ public class ProjectDriver
 		boss.lastName = "Wilhelm";
 		boss.bankCode = 5647;
 		
-		//cdao.setJoint(new JointModel(n.jointNum, n.firstName,n.lastName, 0.0));
+		/*Examples of how to use logger in this package
+		 * demo.trace("We've just greeted the user!");
+		 * demo.debug("We've just greeted the user!");
+		 * demo.info("We've just greeted the user!");
+		 * demo.warn("We've just greeted the user!");
+		 * demo.error("We've just greeted the user!");
+		 * demo.fatal("We've just greeted the user!");
+		 */
 		
 		LoginMenu();
 	}

@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.LocalDate;
 import java.util.ArrayList;
 
 public class CustomerDAO implements CustomerDAO_I
@@ -47,17 +48,19 @@ public class CustomerDAO implements CustomerDAO_I
 		return null;
 	}	
 	
-	//get all customers in the table
+	//get one customer in the table
 	public CustomerModel searchCustomers(String user)
 	{
 		try
 		{
 			Connection cMan = ConnectManager.getConnect();
 			
+			String query = "SELECT * FROM Customers WHERE user_name = ?";
 			//create a statement & result set
-			Statement statement = cMan.createStatement();
-			ResultSet rs = statement.executeQuery("SELECT * FROM Customers");
+			PreparedStatement pstmt = cMan.prepareStatement(query);
+			pstmt.setString(1, user);
 			
+			ResultSet rs = pstmt.executeQuery();
 			//create a list to store all of them
 			CustomerModel cust = new CustomerModel();
 			while(rs.next())
@@ -89,7 +92,7 @@ public class CustomerDAO implements CustomerDAO_I
 		return null;
 	}	
 	
-	//get all customers in the table
+	//get 1 joint customer in the table
 	public CustomerModel searchJointCustomers(int jnum)
 	{
 		try
@@ -356,5 +359,55 @@ public class CustomerDAO implements CustomerDAO_I
 			e.printStackTrace();
 		}
 		
+	}
+	
+	//adds a log to the DB from a customer
+	public void setLog(CustomerModel NC, String mes)
+	{
+		try
+		{
+			LocalDate ld = LocalDate.now();
+			Connection cMan = ConnectManager.getConnect();
+			
+			//query to be executed
+			String query = "INSERT into BankLogs (user_name, description) VALUES (?, ?)";
+			
+			//creates a prepared statement
+			PreparedStatement pstmt = cMan.prepareStatement(query);
+			
+			pstmt.setString(1, NC.userName);
+			pstmt.setString(2, ld.toString() + " " + mes);
+			
+			pstmt.execute();
+		}
+		catch(SQLException e)
+		{
+			e.printStackTrace();
+		}
+	}
+	
+	//adds a log to the DB from an employee or admin
+	public void setLog(int bankCode, String mes)
+	{
+		try
+		{
+			LocalDate ld = LocalDate.now();
+			Connection cMan = ConnectManager.getConnect();
+			
+			//query to be executed
+			String query = "INSERT into BankLogs (bank_code, description) VALUES (?, ?)";
+			
+			//creates a prepared statement
+			PreparedStatement pstmt = cMan.prepareStatement(query);
+			
+			pstmt.setInt(1, bankCode);
+			pstmt.setString(2, ld.toString() + " " + mes);
+			
+			pstmt.execute();
+		}
+		catch(SQLException e)
+		{
+			e.printStackTrace();
+		}
 	}
 }

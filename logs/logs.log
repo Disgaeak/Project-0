@@ -1,0 +1,15 @@
+12:36:06 [main] INFO  Revature.Project_0.ProjectDriver - We've just greeted the user!
+12:36:06 [main] WARN  Revature.Project_0.ProjectDriver - We've just greeted the user!
+12:36:06 [main] ERROR Revature.Project_0.ProjectDriver - We've just greeted the user!
+12:36:06 [main] FATAL Revature.Project_0.ProjectDriver - We've just greeted the user!
+12:36:36 [main] INFO  Revature.Project_0.ProjectDriver - We've just greeted the user!
+12:36:36 [main] WARN  Revature.Project_0.ProjectDriver - We've just greeted the user!
+12:36:36 [main] ERROR Revature.Project_0.ProjectDriver - We've just greeted the user!
+12:36:36 [main] FATAL Revature.Project_0.ProjectDriver - We've just greeted the user!
+12:45:29 [main] INFO  Revature.Project_0.ProjectDriver - We've just greeted the user!
+12:49:14 [main] INFO  Revature.Project_0.ProjectDriver - We've just greeted the user!
+2022-04-23-1250 [main] INFO  Revature.Project_0.ProjectDriver - We've just greeted the user!
+2022-04-23-1252 [main] INFO  - We've just greeted the user!
+2022-04-23-1338 [main] INFO  - Disgaea has withdrawn $174.63  from checkings
+2022-04-23-1339 [main] INFO  - Disgaea has deposited $5.0 into checkings
+2022-04-23-1339 [main] INFO  - Disgaea has deposited $50.0 into savings

@@ -42,8 +42,8 @@ public class BankCustomer implements ImpBanking
 		admin = ProjectDriver.boss;
 		
 		//account menu for the customer who logged in(not for admin or employee)
-		System.out.println("please select an option:" + "\n" + "1- View account" + "\n" + "2- Deposit amount" + "\n" + "3- Withdraw amount"
-				+ "\n" + "4- Savings" + "\n" + "5- Joint account" + "\n" + "6- log off");
+		System.out.println("please select an option:" + "\n" + "1- View account" + "  " + "2- Deposit amount" + "\n" + "3- Withdraw amount"
+				+ "  " + "4- Savings" + "\n" + "5- Joint account" + "  " + "6- log off");
 		scanInt = myObj.nextInt();
 		
 		switch(scanInt)
@@ -119,6 +119,8 @@ public class BankCustomer implements ImpBanking
 		cdao.setCustomer(new CustomerModel(nCustomer.accountNum, nCustomer.firstName, nCustomer.lastName, nCustomer.userName, nCustomer.passWord,
 				nCustomer.routNum, 0.0, 0.0, nCustomer.jointNum, 2));
 		
+		//ProjectDriver.demo.info(nCustomer.userName +  " has created new account.");
+		cdao.setLog((CustomerModel)nCustomer, " has created new account.");
 		ProjectDriver.LoginMenu();
 	}
 	
@@ -151,6 +153,8 @@ public class BankCustomer implements ImpBanking
 				
 				//updates information by casting customer to customer model
 				cdao.UpdateCustomer((CustomerModel)this);
+				//ProjectDriver.demo.info(userName +  " has deposited $" + scandoub + " into savings");
+				cdao.setLog((CustomerModel)this, " has deposited $" + scandoub + " into savings");
 				System.out.println("The amount has been added to your account.");
 				openSavings();
 			}
@@ -171,6 +175,8 @@ public class BankCustomer implements ImpBanking
 			
 			//updates information by casting customer to customer model
 			cdao.UpdateCustomer((CustomerModel)this);
+			//ProjectDriver.demo.info(userName +  " has deposited $" + scandoub + " into checkings");
+			cdao.setLog((CustomerModel)this, " has deposited $" + scandoub + " into checkings");
 			System.out.println("The amount has been added to your account");
 			accountMenu();
 		}
@@ -216,6 +222,8 @@ public class BankCustomer implements ImpBanking
 			if(input.equalsIgnoreCase("Yes"))
 			{
 				cdao.setSavings(accountNum);
+				//ProjectDriver.demo.info(userName +  " has created new savings account.");
+				cdao.setLog((CustomerModel)this, " has created a new savings account");
 				System.out.println("Savings account has been created.");
 				accountMenu();
 			}
@@ -253,6 +261,7 @@ public class BankCustomer implements ImpBanking
 					cdao.UpdateJoint((CustomerModel) jc);
 					cdao.UpdateCustomer((CustomerModel)this);
 					System.out.println("The amount has been deposited.");
+					cdao.setLog((CustomerModel)this, " has deposited $" + scandoub + " into joint account");
 					openJoint();
 				}
 				else
@@ -272,6 +281,7 @@ public class BankCustomer implements ImpBanking
 					cdao.UpdateJoint((CustomerModel)jc);
 					cdao.UpdateCustomer((CustomerModel)this);
 					System.out.println("The amount has been withdrawn.");
+					cdao.setLog((CustomerModel)this, " has withdrawn $" + scandoub + " from joint account");
 					openJoint();
 				}
 				else
@@ -298,6 +308,9 @@ public class BankCustomer implements ImpBanking
 				hold.jointNum = this.jointNum;
 				cdao.setJoint((CustomerModel)this);
 				cdao.UpdateCustomer((CustomerModel)hold);
+				
+				//ProjectDriver.demo.info(userName +  " has created a joint account with " + hold.userName);
+				cdao.setLog((CustomerModel)this, " has created a joint account with " + hold.userName);
 				openJoint();
 			}
 			else
@@ -325,6 +338,8 @@ public class BankCustomer implements ImpBanking
 				balance += scandoub;
 				//updates information by casting customer to customer model
 				cdao.UpdateCustomer((CustomerModel)this);
+				//ProjectDriver.demo.info(userName +  " has withdrawn $" + scandoub + " from savings");
+				cdao.setLog((CustomerModel)this, " has withdrawn $" + scandoub + " from savings");
 				System.out.println("The amount has been added to your account.");
 				openSavings();
 			}
@@ -347,6 +362,8 @@ public class BankCustomer implements ImpBanking
 				balance -= scandoub;
 				//updates information by casting customer to customer model
 				cdao.UpdateCustomer((CustomerModel)this);
+				//ProjectDriver.demo.info(userName +  " has withdrawn $" + scandoub + "  from checkings");
+				cdao.setLog((CustomerModel)this, " has withdrawn $" + scandoub + " from checkings");
 				System.out.println("The amount has been taken from your account");
 				accountMenu();
 			}

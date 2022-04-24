@@ -1,6 +1,8 @@
 package Revature.Project_0;
 
 import java.util.Scanner;
+
+import DataBase.CustomerDAO;
 import RevCustom.BankCustomer;
 
 public class BankEmployee extends BankAdmin
@@ -8,11 +10,12 @@ public class BankEmployee extends BankAdmin
 	//for this class
 	private Scanner myObj = new Scanner(System.in);
 	private int scanInt;
-	private BankAdmin boss;
+	private String input;
+	private CustomerDAO cdao = new CustomerDAO();
+	private BankCustomer c;
 	
 	public void accountMenu()
 	{
-		boss = ProjectDriver.boss;
 		//account menu for the employee
 		System.out.println("please select an option:" + "\n" + "1- View account" + "\n" + "2- View customer account" + "\n" + "3- View customer Savings"
 				+ "\n" + "4- View Customer Joint Account" + "\n" + "5- View Applications" + "\n" + "6- log off");
@@ -24,15 +27,47 @@ public class BankEmployee extends BankAdmin
 			viewAccount();
 			break;
 		case 2:
+			System.out.println("Enter the username of the customer");
+			input = myObj.next();
+			
+			c = cdao.searchCustomers(input);
+			if(c != null)
+				viewAccount(c);
+			else
+				System.out.println("this account doesn't exist.");
 			
 			break;
 		case 3:
+			System.out.println("Enter the username of the customer");
+			input = myObj.next();
+			
+			c = cdao.searchCustomers(input);
+			if(c != null)
+				viewSavings(c);
+			else
+				System.out.println("this account doesn't exist.");
 			
 			break;
 		case 4:
+			System.out.println("Enter the username of the customer");
+			input = myObj.next();
+			
+			c = cdao.searchCustomers(input);
+			if(c != null)
+			{
+				scanInt = c.jointNum;
+				c = cdao.searchJointCustomers(scanInt);
+				if(c != null)
+					viewJoint(c);
+				else
+					System.out.println("this Joint account doesn't exist.");
+			}
+			else
+				System.out.println("this account doesn't exist.");
+			
 			break;
 		case 5:
-			boss.checkApplications(this);
+			checkApplications();
 			break;
 		case 6:
 			System.out.println("now logging off");
@@ -40,18 +75,7 @@ public class BankEmployee extends BankAdmin
 			break;
 			default:
 		}
-	}
-	
-	public void viewAccount() 
-	{
-		System.out.println("First name: " + firstName + "\n" + "Last Name: " + lastName);
-		accountMenu();
-	}
-	
-	public void viewAccount(BankCustomer n)
-	{
-		System.out.println("First name: " + n.firstName + " " + n.lastName + "\n" + "Username: " + n.userName + "\n" 
-				+ "Account #: " + n.accountNum + " " + n.routNum + "\n" + "Balance: $" + n.balance + "\n" + "Joint #: " + n.jointNum);
+		
 		accountMenu();
 	}
 }

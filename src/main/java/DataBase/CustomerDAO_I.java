@@ -2,29 +2,31 @@ package DataBase;
 
 import java.util.ArrayList;
 
+import RevCustom.BankCustomer;
+
 public interface CustomerDAO_I 
 {
 	//get all customers
-	public ArrayList<CustomerModel> getCustomers();
+	public ArrayList<BankCustomer> getCustomers();
 	
-	//get 1 customer in the table
-	public CustomerModel searchCustomers(String user);
+	//searches DB for a customer/employee/joint account
+	public BankCustomer searchCustomers(String user);
+	public BankCustomer searchCustomers();
 	
-	//get 1 customer in the table
-	public CustomerModel searchCustomers(int app);
+	//adds to the DB
+	public void setCustomer(BankCustomer NC);
+	public void setSavings(int ns);
+	public void setLog(BankCustomer NC, String mes);
+	public void setLog(int bankCode, String mes);
 	
-	//get 1 customer in the table
-	public CustomerModel searchJointCustomers(int jnum);
-	
-	//adds a customer to the DB
-	public void setCustomer(CustomerModel NC);
-	
-	public void setJoint(CustomerModel JC);
-	
+	//checks if in the DB
 	public boolean bIsCustomer(String cm);
 	public boolean bHasSavings(int cm);
-	public void setSavings(int ns);
 	
-	public void UpdateCustomer(CustomerModel cm);
-	public void UpdateJoint(CustomerModel cm);
+	//updates information in the DB row
+	public void UpdateCustomer(BankCustomer cm);
+	
+	//removes customer from DB
+	public void deleteCustomer(String cm);
+	
 }

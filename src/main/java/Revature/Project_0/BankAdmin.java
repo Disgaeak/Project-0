@@ -1,36 +1,57 @@
 package Revature.Project_0;
 
 import RevCustom.BankCustomer;
+
+import java.time.LocalDate;
 import java.util.Scanner;
 
 import DataBase.CustomerDAO;
-import DataBase.CustomerModel;
+import DataBase.EmployeeDAO;
+import DataBase.JointDAO;
 
 public class BankAdmin implements ImpBanking
 {
 	//for all classes
 	public String firstName;
 	public String lastName;
-	
-	//bank only class
 	public int bankCode;
+	public double hrPay;
+	public int lv;
+	public LocalDate startDay;
 	
 	//for this class
 	private Scanner myObj = new Scanner(System.in);
 	private int scanInt;
 	private CustomerDAO cdao = new CustomerDAO();
+	private EmployeeDAO edao = new EmployeeDAO();
+	private JointDAO jdao = new JointDAO();
 	private BankCustomer bc;
-	private ProjectDriver pd;
+	private BankEmployee be;
 	private String input;
-	private CustomerModel c;
+	private BankCustomer c;
 	private double scandoub;
 	
+	public BankAdmin(int code, String firstName2, String lastName2, LocalDate start, double pay, int validAccount) 
+	{
+		bankCode = code;
+		firstName = firstName2;
+		lastName = lastName2;
+		startDay = start;
+		hrPay = pay;
+		lv = validAccount;
+	}
+
+	public BankAdmin() 
+	{
+		
+	}
+
 	@Override
 	public void accountMenu() 
 	{
 		//account menu for the admin
-		System.out.println("please select an option:" + "\n" + "1- View account" + "   " + "2- View employee account"+ "\n" + "3- View customer account" + 
-		"   " + "4- Check applications" + "\n" + "5- Change Customer Account" + "   " + "6- Log off");
+		System.out.println("please select an option:" + "\n" + "1- View account" + "   " + "2- View employee Menu"+ "\n" + "3- Hire employee" + "   " +
+		"4- View customer account" + "\n" + "5- Check applications" + "   " + "6- Change Customer Account" + "\n" + "7- Log off");
 		scanInt = myObj.nextInt();
 		
 		switch(scanInt)
@@ -39,9 +60,12 @@ public class BankAdmin implements ImpBanking
 			viewAccount();
 			break;
 		case 2:
-			viewAccount(pd.bE);
+			AlterAccount();
 			break;
 		case 3:
+			HireEmployee();
+			break;
+		case 4:
 			System.out.println("Enter the username of the customer");
 			input = myObj.next();
 			
@@ -52,10 +76,10 @@ public class BankAdmin implements ImpBanking
 				System.out.println("this account doesn't exist.");
 			
 			break;
-		case 4:
+		case 5:
 			checkApplications();
 			break;
-		case 5:
+		case 6:
 			System.out.println("Enter the username of the customer");
 			input = myObj.next();
 			
@@ -66,7 +90,7 @@ public class BankAdmin implements ImpBanking
 				System.out.println("this account doesn't exist.");
 			
 			break;
-		case 6:
+		case 7:
 			System.out.println("now logging off");
 			ProjectDriver.LoginMenu();
 			break;
@@ -104,7 +128,7 @@ public class BankAdmin implements ImpBanking
 	//check if any applications to open account are available and either accept or deny or pending
 	protected void checkApplications()
 	{
-		bc = cdao.searchCustomers(2);
+		bc = cdao.searchCustomers();
 		
 		if(bc != null)
 		{
@@ -116,13 +140,15 @@ public class BankAdmin implements ImpBanking
 			{
 			case 0:
 				bc.validAccount = 0;
-				cdao.UpdateCustomer((CustomerModel)bc);
+				cdao.UpdateCustomer(bc);
+				ProjectDriver.demo.info(bankCode +  " has denied " + bc.userName + "'s account");
 				cdao.setLog(bankCode, "has denied " + bc.userName + " account");
 				checkApplications();
 				break;
 			case 1:
 				bc.validAccount = 1;
-				cdao.UpdateCustomer((CustomerModel)bc);
+				cdao.UpdateCustomer(bc);
+				ProjectDriver.demo.info(bankCode +  " has accepted " + bc.userName + "'s account");
 				cdao.setLog(bankCode, "has accepted " + bc.userName + " account");
 				checkApplications();
 				break;
@@ -141,7 +167,108 @@ public class BankAdmin implements ImpBanking
 	//Admin only methods //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	private void viewAccount(BankEmployee name)
 	{
-		System.out.println("Name: " + name.firstName + " " + name.lastName + "\n" + "Bank Code: " + name.bankCode);
+		System.out.println("Name: " + name.firstName + " " + name.lastName + "\n" + "Bank Code: " + name.bankCode + "  Rank: " + name.lv 
+				+ "\n" + "Hourly wage is $" + name.hrPay + "\n" + "Start date: " + name.startDay);
+	}
+	
+	private void AlterAccount()
+	{
+		// ability for admin to make changes on a customer's account
+		System.out.println("What would you like to do?:" + "\n" + "1- View Employee Account" + "   " + "2- Change employee's name"+ "\n" + "3- Change employee's pay" + 
+				"   " + "4- Change employee's rank" + "\n" + "5- Fire employee" + "   " + "6- Return to menu");
+				scanInt = myObj.nextInt();
+				
+		switch(scanInt)
+		{
+		case 1:
+			System.out.println("Enter the code for Employee: ");
+			scanInt = myObj.nextInt();
+			
+			if(edao.bIsEmployee(scanInt))
+				be = (BankEmployee)edao.searchEmployee(scanInt);
+			else
+				System.out.println("This employee is invalid");
+			
+			viewAccount(be);
+			break;
+		case 2:
+			System.out.println("Enter the code of the employee: ");
+			scanInt = myObj.nextInt();
+			be = (BankEmployee)edao.searchEmployee(scanInt);
+			
+			System.out.println("Current name is: " + be.firstName + " " + be.lastName + "\n" + "Enter new first name for employee: ");
+			input = myObj.next();
+			be.firstName = input;
+			
+			System.out.println("Enter new last name for employee: ");
+			input = myObj.next();
+			be.lastName = input;
+			
+			edao.UpdateEmployee(be);
+			ProjectDriver.demo.info(bankCode +  " has updated " + be.bankCode + "'s name");
+			cdao.setLog(bankCode, " has updated " + be.bankCode + "'s name.");
+			System.out.println("Successfully updated information");
+			break;
+		case 3:
+			System.out.println("Enter the code of the employee: ");
+			scanInt = myObj.nextInt();
+			be = (BankEmployee)edao.searchEmployee(scanInt);
+			
+			System.out.println("Current hourly wage is: $" + be.hrPay + "\n" + "Enter new hourly wage for employee: ");
+			scandoub = myObj.nextDouble();
+			be.hrPay = scandoub;
+			
+			edao.UpdateEmployee(be);
+			ProjectDriver.demo.info(bankCode + " has updated " + be.bankCode + "'s hourly wage.");
+			cdao.setLog(bankCode, " has updated " + be.bankCode + "'s hourly wage.");
+			System.out.println("Successfully updated information");
+			break;
+		case 4:
+			System.out.println("Enter the code of the employee: ");
+			scanInt = myObj.nextInt();
+			be = (BankEmployee)edao.searchEmployee(scanInt);
+			
+			System.out.println("Current rank is: " + be.lv + "\n" + "Enter new rank for employee: ");
+			scanInt = myObj.nextInt();
+			be.lv = scanInt;
+			
+			edao.UpdateEmployee(be);
+			ProjectDriver.demo.info(bankCode + " has updated " + be.bankCode + "'s rank.");
+			cdao.setLog(bankCode, " has updated " + be.bankCode + "'s rank.");
+			System.out.println("Successfully updated information");
+			break;
+		case 5:
+			System.out.println("Enter the code of the employee: ");
+			scanInt = myObj.nextInt();
+			
+			if(edao.bIsEmployee(scanInt))
+			{
+				System.out.println("Are you sure you want to fire " + scanInt + " and remove records?" + "\n" + "Type Yes/No");
+				input = myObj.next();
+				
+				if(input.equalsIgnoreCase("yes") || input.equalsIgnoreCase("y"))
+				{
+					edao.deleteEmployee(scanInt);
+					ProjectDriver.demo.info(bankCode + " has fired " + scanInt);
+					cdao.setLog(bankCode, " has fired " + scanInt);
+				}
+				else
+					AlterAccount();
+			}
+			else
+			{
+				System.out.println("Employee doesn't exist");
+			}
+			
+			break;
+		case 6:
+			accountMenu();
+			break;
+			default:
+				accountMenu();
+		}
+		
+		AlterAccount();
 	}
 	
 	private void AlterAccount(BankCustomer cust)
@@ -162,7 +289,7 @@ public class BankAdmin implements ImpBanking
 			input = myObj.next();
 			cust.lastName = input;
 			
-			cdao.UpdateCustomer((CustomerModel)cust);
+			cdao.UpdateCustomer(cust);
 			cdao.setLog(bankCode, "has updated the name of  " + cust.userName);
 			break;
 		case 2:
@@ -174,7 +301,7 @@ public class BankAdmin implements ImpBanking
 			input = myObj.next();
 			cust.lastName = input;
 			
-			cdao.UpdateCustomer((CustomerModel)cust);
+			cdao.UpdateCustomer(cust);
 			cdao.setLog(bankCode, "has updated the login info of " + cust.userName);
 			break;
 		case 3:
@@ -182,7 +309,7 @@ public class BankAdmin implements ImpBanking
 			scandoub = myObj.nextDouble();
 			cust.balance = scandoub;
 			
-			cdao.UpdateCustomer((CustomerModel)cust);
+			cdao.UpdateCustomer(cust);
 			cdao.setLog(bankCode, "has updated " + cust.userName + " checking balance to $" + cust.balance);
 			break;
 		case 4:
@@ -190,17 +317,17 @@ public class BankAdmin implements ImpBanking
 			scandoub = myObj.nextDouble();
 			cust.saveBalance = scandoub;
 			
-			cdao.UpdateCustomer((CustomerModel)cust);
+			cdao.UpdateCustomer(cust);
 			cdao.setLog(bankCode, "has updated " + cust.userName + " savings balance to $" + cust.balance);
 			break;
 		case 5:
-			bc = cdao.searchJointCustomers(cust.jointNum);
+			bc = jdao.searchJointCustomers(cust.jointNum);
 			
 			System.out.println("Current joint balance is: $"  + bc.balance + "\n" + "Enter new balance: ");
 			scandoub = myObj.nextDouble();
 			bc.balance = scandoub;
 			
-			cdao.UpdateJoint((CustomerModel)bc);
+			jdao.UpdateJoint(bc);
 			cdao.setLog(bankCode, "has updated " + cust.userName + " joint balance to $" + cust.balance);
 			break;
 		case 6:
@@ -209,7 +336,7 @@ public class BankAdmin implements ImpBanking
 			scanInt = myObj.nextInt();
 			cust.validAccount = scanInt;
 			
-			cdao.UpdateCustomer((CustomerModel)cust);
+			cdao.UpdateCustomer(cust);
 			switch(scanInt)
 			{
 			case 0:
@@ -233,5 +360,51 @@ public class BankAdmin implements ImpBanking
 		}
 		
 		AlterAccount(cust);
+	}
+	
+	private void HireEmployee()
+	{
+		BankAdmin hold = new BankAdmin();
+		
+		int c = RNG();
+		while(edao.searchEmployee(c) != null)
+			c = RNG();
+		
+		hold.bankCode = c;
+		
+		System.out.println("Enter employee's first name: ");
+		input = myObj.next();
+		hold.firstName = input;
+		
+		System.out.println("Enter employee's last name: ");
+		input = myObj.next();
+		hold.lastName = input;
+		
+		hold.startDay = LocalDate.now();
+		
+		System.out.println("Enter employee's hourly pay: ");
+		scandoub = myObj.nextDouble();
+		hold.hrPay = scandoub;
+		
+		System.out.println("Enter Rank: 0- employee or 1- Admin");
+		scanInt = myObj.nextInt();
+		hold.lv = scanInt;
+		
+		edao.setEmployee(hold);
+		cdao.setLog(bankCode, " has hired " + hold.bankCode + "!");
+		ProjectDriver.demo.info(bankCode +  " has hired " + hold.bankCode + "!");
+		System.out.println("Employee " + hold.bankCode + " has been hired!");
+	}
+	
+	private int RNG()
+	{
+		int n;
+		int min = 1000;
+		int max = 9999;
+		
+		//creates a unique account and routing number for the customer
+		n = (int) Math.floor(Math.random()*(max-min+1)+min);
+		
+		return n;
 	}
 }

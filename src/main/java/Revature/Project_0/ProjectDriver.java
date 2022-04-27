@@ -1,37 +1,33 @@
 package Revature.Project_0;
 
 import RevCustom.BankCustomer;
+import io.javalin.Javalin;
+import io.javalin.http.Handler;
+
 import java.util.Scanner;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import API.CustomerController;
+import API.EmployeeController;
 import DataBase.CustomerDAO;
+import DataBase.EmployeeDAO;
 
 public class ProjectDriver 
 {
 	private static BankCustomer customer = new BankCustomer();
-	public static BankEmployee bE = new BankEmployee();
-	public static BankAdmin boss = new BankAdmin();
+	public static BankEmployee bE;
+	public static BankAdmin boss;
 	private static String userName;
 	private static Scanner myObj = new Scanner(System.in); 
 	private static CustomerDAO cdao = new CustomerDAO();
+	private static EmployeeDAO edao = new EmployeeDAO();
 	
 	public static Logger demo = LogManager.getLogger(ProjectDriver.class);
 	
 	public static void main(String[] args) 
 	{	
-		
-		//Hire 1 employee
-		bE.firstName = "Robert";
-		bE.lastName = "Dover";
-		bE.bankCode = 1234;
-		
-		//create 1 Admin
-		boss.firstName = "John";
-		boss.lastName = "Wilhelm";
-		boss.bankCode = 5647;
-		
 		/*Examples of how to use logger in this package
 		 * demo.trace("We've just greeted the user!");
 		 * demo.debug("We've just greeted the user!");
@@ -41,8 +37,21 @@ public class ProjectDriver
 		 * demo.fatal("We've just greeted the user!");
 		 */
 		
-		LoginMenu();
+		//LoginMenu();
+		
+		//creates a javalin object and starts listening on port 7070
+		Javalin app = Javalin.create().start(7070);
+		
+		//verb = get, from user, which will result in hello on page
+		//sets up a listener for GET requests to the user path, when detected returns "Hello"
+		//in body of response
+		EmployeeController eCon = new EmployeeController(app);
+		CustomerController cCon = new CustomerController(app);
+		//you can store a lambda in a handler variable
+		//app.get("user", userHandle);
 	}
+	
+	public static Handler userHandle = ctx -> { ctx.result("Hello!!");};
 	
 	public static void LoginMenu()
 	{
@@ -80,7 +89,7 @@ public class ProjectDriver
 				}
 				break;
 			case 2:
-				System.out.println("Your account is still pending");
+				System.out.println("Your account is pending");
 				LoginMenu();
 				break;
 			}
@@ -97,19 +106,20 @@ public class ProjectDriver
 			}
 			else
 			{
-				int hold = Integer.parseInt(userName);
-				
-				//checks if employee or boss. if neither end program
-				if(hold == 1234)
+				int c = Integer.parseInt(userName);
+				//have either employee or admin login and call respective acccount menu
+				if(edao.bIsEmployee(c))
 				{
+					//is employee aka lv equals 0
+					bE = (BankEmployee)edao.searchEmployee(c);
 					bE.accountMenu();
 				}
-				else if(hold == 5647)
+				else
 				{
+					//is an Admin
+					boss = edao.searchEmployee(c);
 					boss.accountMenu();
 				}
-				else
-					System.out.println("No username found.");
 			}
 		}
 	}

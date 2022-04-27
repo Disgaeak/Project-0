@@ -5,13 +5,16 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+
 import java.time.LocalDate;
 import java.util.ArrayList;
+
+import RevCustom.BankCustomer;
 
 public class CustomerDAO implements CustomerDAO_I
 {
 	//get all customers in the table
-	public ArrayList<CustomerModel> getCustomers()
+	public ArrayList<BankCustomer> getCustomers()
 	{
 		try
 		{
@@ -22,7 +25,7 @@ public class CustomerDAO implements CustomerDAO_I
 			ResultSet rs = statement.executeQuery("SELECT * FROM Customers");
 			
 			//create a list to store all of them
-			ArrayList<CustomerModel> cust = new ArrayList<CustomerModel>();
+			ArrayList<BankCustomer> cust = new ArrayList<BankCustomer>();
 			while(rs.next())
 			{
 				int accountNumber = rs.getInt("account_num");
@@ -36,7 +39,7 @@ public class CustomerDAO implements CustomerDAO_I
 				int jointNumber = rs.getInt("joint_num");
 				int validAccount = rs.getInt("valid_aacount");
 				
-				cust.add(new CustomerModel(accountNumber, firstName, lastName, userName, password, routNumber, balance, saveBalance, jointNumber, validAccount));
+				cust.add(new BankCustomer(accountNumber, firstName, lastName, userName, password, routNumber, balance, saveBalance, jointNumber, validAccount));
 			}
 			
 			return cust;
@@ -48,8 +51,9 @@ public class CustomerDAO implements CustomerDAO_I
 		return null;
 	}	
 	
+	//-----------------------------------------------------------Searchers-----------------------------------------------------------------
 	//get one customer in the table
-	public CustomerModel searchCustomers(String user)
+	public BankCustomer searchCustomers(String user)
 	{
 		try
 		{
@@ -62,25 +66,22 @@ public class CustomerDAO implements CustomerDAO_I
 			
 			ResultSet rs = pstmt.executeQuery();
 			//create a list to store all of them
-			CustomerModel cust = new CustomerModel();
-			while(rs.next())
+			BankCustomer cust = new BankCustomer();
+			if(rs.next())
 			{
-				if(rs.getString("user_name").equals(user))
-				{
-					int accountNumber = rs.getInt("account_num");
-					String firstName = rs.getString("first_name");
-					String lastName = rs.getString("last_name");
-					String userName = rs.getString("user_name");
-					String password = rs.getString("user_password");
-					int routNumber = rs.getInt("rout_num");
-					double balance = rs.getDouble("balance");
-					double saveBalance = rs.getDouble("save_balance");
-					int jointNumber = rs.getInt("joint_num");
-					int validAccount = rs.getInt("valid_aacount");
-					
-					cust = new CustomerModel(accountNumber, firstName, lastName, userName, password, routNumber, balance, saveBalance, jointNumber, validAccount);
-					return cust;
-				}
+				int accountNumber = rs.getInt("account_num");
+				String firstName = rs.getString("first_name");
+				String lastName = rs.getString("last_name");
+				String userName = rs.getString("user_name");
+				String password = rs.getString("user_password");
+				int routNumber = rs.getInt("rout_num");
+				double balance = rs.getDouble("balance");
+				double saveBalance = rs.getDouble("save_balance");
+				int jointNumber = rs.getInt("joint_num");
+				int validAccount = rs.getInt("valid_aacount");
+				
+				cust = new BankCustomer(accountNumber, firstName, lastName, userName, password, routNumber, balance, saveBalance, jointNumber, validAccount);
+				return cust;
 			}
 			
 			return null;
@@ -92,31 +93,35 @@ public class CustomerDAO implements CustomerDAO_I
 		return null;
 	}	
 	
-	//get 1 joint customer in the table
-	public CustomerModel searchJointCustomers(int jnum)
+	@Override
+	public BankCustomer searchCustomers() 
 	{
+		//used by admin to search for customer applications who are pending
 		try
 		{
 			Connection cMan = ConnectManager.getConnect();
 			
 			//create a statement & result set
 			Statement statement = cMan.createStatement();
-			ResultSet rs = statement.executeQuery("SELECT * FROM jointaccounts WHERE joint_num = " + jnum);
+			ResultSet rs = statement.executeQuery("SELECT * FROM Customers WHERE valid_account = 2");
 			
 			//create a list to store all of them
-			CustomerModel cust = new CustomerModel();
-			while(rs.next())
+			BankCustomer cust = new BankCustomer();
+			if(rs.next())
 			{
-				if(rs.getInt("joint_num") == jnum)
-				{
-					String firstName = rs.getString("first_name");
-					String lastName = rs.getString("last_name");
-					double balance = rs.getDouble("balance");
-					int jointNumber = rs.getInt("joint_num");
-					
-					cust = new CustomerModel(firstName, lastName, balance, jointNumber);
-					return cust;
-				}
+				int accountNumber = rs.getInt("account_num");
+				String firstName = rs.getString("first_name");
+				String lastName = rs.getString("last_name");
+				String userName = rs.getString("user_name");
+				String password = rs.getString("user_password");
+				int routNumber = rs.getInt("rout_num");
+				double balance = rs.getDouble("balance");
+				double saveBalance = rs.getDouble("save_balance");
+				int jointNumber = rs.getInt("joint_num");
+				int validAccount = rs.getInt("valid_aacount");
+				
+				cust = new BankCustomer(accountNumber, firstName, lastName, userName, password, routNumber, balance, saveBalance, jointNumber, validAccount);
+				return cust;
 			}
 			
 			return null;
@@ -126,10 +131,13 @@ public class CustomerDAO implements CustomerDAO_I
 			e.printStackTrace();
 		}
 		return null;
-	}	
+	}
 	
+	//------------------------------------------------End of Searches ------------------------------------------------------------------------------------
+	
+	//------------------------------------------------Setters -------------------------------------------------------------------------------------
 	//adds a customer to the DB
-	public void setCustomer(CustomerModel NC)
+	public void setCustomer(BankCustomer NC)
 	{
 		try
 		{
@@ -161,22 +169,47 @@ public class CustomerDAO implements CustomerDAO_I
 		}
 	}
 	
-	public void setJoint(CustomerModel JC)
+	@Override
+	public void setSavings(int ns) 
 	{
 		try
 		{
 			Connection cMan = ConnectManager.getConnect();
 			
 			//query to be executed
-			String query = "INSERT into jointaccounts (joint_num, first_name, last_name, balance)" + " values (?,?,?,?)";
+			String query = "INSERT into savings (account, balance)" + " values (?,?)";
 			
 			//creates a prepared statement
 			PreparedStatement pstmt = cMan.prepareStatement(query);
 			
-			pstmt.setInt(1, JC.jointNum);
-			pstmt.setString(2, JC.firstName);
-			pstmt.setString(3, JC.lastName);
-			pstmt.setDouble(4, 0.0);
+			pstmt.setInt(1, ns);
+			pstmt.setDouble(2, 0);
+			
+			pstmt.execute();
+		}
+		catch(SQLException e)
+		{
+			e.printStackTrace();
+		}
+		
+	}
+
+	//adds a log to the DB from a customer
+	public void setLog(BankCustomer NC, String mes)
+	{
+		try
+		{
+			LocalDate ld = LocalDate.now();
+			Connection cMan = ConnectManager.getConnect();
+			
+			//query to be executed
+			String query = "INSERT into BankLogs (user_name, description) VALUES (?, ?)";
+			
+			//creates a prepared statement
+			PreparedStatement pstmt = cMan.prepareStatement(query);
+			
+			pstmt.setString(1, NC.userName);
+			pstmt.setString(2, ld.toString() + " " + mes);
 			
 			pstmt.execute();
 		}
@@ -186,23 +219,73 @@ public class CustomerDAO implements CustomerDAO_I
 		}
 	}
 
+	//adds a log to the DB from an employee or admin
+	public void setLog(int bankCode, String mes)
+	{
+		try
+		{
+			LocalDate ld = LocalDate.now();
+			Connection cMan = ConnectManager.getConnect();
+			
+			//query to be executed
+			String query = "INSERT into BankLogs (bank_code, description) VALUES (?, ?)";
+			
+			//creates a prepared statement
+			PreparedStatement pstmt = cMan.prepareStatement(query);
+			
+			pstmt.setInt(1, bankCode);
+			pstmt.setString(2, ld.toString() + " " + mes);
+			
+			pstmt.execute();
+		}
+		catch(SQLException e)
+		{
+			e.printStackTrace();
+		}
+	}
+	//----------------------------------------------------------------End of Setters-------------------------------------------------------------
+	
+	//----------------------------------------------------------------booleans (checkers)-------------------------------------------------------
 	public boolean bIsCustomer(String cm) 
 	{
 		try
 		{
 			Connection cMan = ConnectManager.getConnect();
-			String uName;
-			
+
 			//create a statement & result set
-			String query = "SELECT * FROM customers";
+			String query = "SELECT * FROM customers WHERE user_name = ?";
 			PreparedStatement pstmt = cMan.prepareStatement(query);
+			pstmt.setString(1, cm);
 			
 			ResultSet rs = pstmt.executeQuery();
-			while(rs.next())
+			if(rs.next())
 			{
-				uName = rs.getString("user_name");
-				if(uName.equals(cm))
-					return true;
+				return true;
+			}
+			
+			return false;
+		}
+		catch(SQLException e) {}
+		return false;
+	}
+	
+	@Override
+	public boolean bHasSavings(int cm) 
+	{
+		try
+		{
+			Connection cMan = ConnectManager.getConnect();
+		
+			//create a statement & result set
+			String query = "SELECT * FROM savings WHERE account = ?";
+			PreparedStatement pstmt = cMan.prepareStatement(query);
+			
+			pstmt.setInt(1, cm);
+			
+			ResultSet rs = pstmt.executeQuery();
+			if(rs.next())
+			{
+				return true;
 			}
 			
 			return false;
@@ -211,50 +294,12 @@ public class CustomerDAO implements CustomerDAO_I
 		return false;
 	}
 
+	//-----------------------------------------------------------End of checkers--------------------------------------------------------
+	
+	
+	//----------------------------------------------------------- Updaters --------------------------------------------------------
 	@Override
-	public CustomerModel searchCustomers(int app) 
-	{
-		try
-		{
-			Connection cMan = ConnectManager.getConnect();
-			
-			//create a statement & result set
-			Statement statement = cMan.createStatement();
-			ResultSet rs = statement.executeQuery("SELECT * FROM Customers");
-			
-			//create a list to store all of them
-			CustomerModel cust = new CustomerModel();
-			while(rs.next())
-			{
-				if(rs.getInt("valid_aacount") == app)
-				{
-					int accountNumber = rs.getInt("account_num");
-					String firstName = rs.getString("first_name");
-					String lastName = rs.getString("last_name");
-					String userName = rs.getString("user_name");
-					String password = rs.getString("user_password");
-					int routNumber = rs.getInt("rout_num");
-					double balance = rs.getDouble("balance");
-					double saveBalance = rs.getDouble("save_balance");
-					int jointNumber = rs.getInt("joint_num");
-					int validAccount = rs.getInt("valid_aacount");
-					
-					cust = new CustomerModel(accountNumber, firstName, lastName, userName, password, routNumber, balance, saveBalance, jointNumber, validAccount);
-					return cust;
-				}
-			}
-			
-			return null;
-		}
-		catch(SQLException e)
-		{
-			e.printStackTrace();
-		}
-		return null;
-	}
-
-	@Override
-	public void UpdateCustomer(CustomerModel cm) 
+	public void UpdateCustomer(BankCustomer cm) 
 	{
 		try
 		{
@@ -285,47 +330,22 @@ public class CustomerDAO implements CustomerDAO_I
 		}
 	}
 
+	//--------------------------------------------------End of updaters-----------------------------------------------------------------------
+	
 	@Override
-	public boolean bHasSavings(int cm) 
-	{
-		try
-		{
-			Connection cMan = ConnectManager.getConnect();
-			int uName;
-			
-			//create a statement & result set
-			String query = "SELECT * FROM savings";
-			PreparedStatement pstmt = cMan.prepareStatement(query);
-			
-			ResultSet rs = pstmt.executeQuery();
-			while(rs.next())
-			{
-				uName = rs.getInt("account");
-				if(uName == cm)
-					return true;
-			}
-			
-			return false;
-		}
-		catch(SQLException e) {}
-		return false;
-	}
-
-	@Override
-	public void setSavings(int ns) 
+	public void deleteCustomer(String cm) 
 	{
 		try
 		{
 			Connection cMan = ConnectManager.getConnect();
 			
 			//query to be executed
-			String query = "INSERT into savings (account, balance)" + " values (?,?)";
+			String query = "DELETE from customers WHERE user_name = ?";
 			
 			//creates a prepared statement
 			PreparedStatement pstmt = cMan.prepareStatement(query);
 			
-			pstmt.setInt(1, ns);
-			pstmt.setDouble(2, 0);
+			pstmt.setString(1, cm);
 			
 			pstmt.execute();
 		}
@@ -334,80 +354,5 @@ public class CustomerDAO implements CustomerDAO_I
 			e.printStackTrace();
 		}
 		
-	}
-
-	@Override
-	public void UpdateJoint(CustomerModel cm) 
-	{
-		try
-		{
-			Connection cMan = ConnectManager.getConnect();
-			
-			//query to be executed
-			String query = "UPDATE jointaccounts SET balance = ? WHERE joint_num = ?";
-			
-			//creates a prepared statement
-			PreparedStatement pstmt = cMan.prepareStatement(query);
-			
-			pstmt.setDouble(1, cm.balance);
-			pstmt.setInt(2, cm.jointNum);
-			
-			pstmt.execute();
-		}
-		catch(SQLException e)
-		{
-			e.printStackTrace();
-		}
-		
-	}
-	
-	//adds a log to the DB from a customer
-	public void setLog(CustomerModel NC, String mes)
-	{
-		try
-		{
-			LocalDate ld = LocalDate.now();
-			Connection cMan = ConnectManager.getConnect();
-			
-			//query to be executed
-			String query = "INSERT into BankLogs (user_name, description) VALUES (?, ?)";
-			
-			//creates a prepared statement
-			PreparedStatement pstmt = cMan.prepareStatement(query);
-			
-			pstmt.setString(1, NC.userName);
-			pstmt.setString(2, ld.toString() + " " + mes);
-			
-			pstmt.execute();
-		}
-		catch(SQLException e)
-		{
-			e.printStackTrace();
-		}
-	}
-	
-	//adds a log to the DB from an employee or admin
-	public void setLog(int bankCode, String mes)
-	{
-		try
-		{
-			LocalDate ld = LocalDate.now();
-			Connection cMan = ConnectManager.getConnect();
-			
-			//query to be executed
-			String query = "INSERT into BankLogs (bank_code, description) VALUES (?, ?)";
-			
-			//creates a prepared statement
-			PreparedStatement pstmt = cMan.prepareStatement(query);
-			
-			pstmt.setInt(1, bankCode);
-			pstmt.setString(2, ld.toString() + " " + mes);
-			
-			pstmt.execute();
-		}
-		catch(SQLException e)
-		{
-			e.printStackTrace();
-		}
 	}
 }

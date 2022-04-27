@@ -1,6 +1,5 @@
 package RevCustom;
 
-import Revature.Project_0.BankAdmin;
 import Revature.Project_0.ImpBanking;
 import Revature.Project_0.ProjectDriver;
 
@@ -8,7 +7,7 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 import DataBase.CustomerDAO;
-import DataBase.CustomerModel;
+import DataBase.JointDAO;
 
 public class BankCustomer implements ImpBanking
 {
@@ -26,7 +25,6 @@ public class BankCustomer implements ImpBanking
 	
 	//used for banks
 	public int validAccount = 2;
-	public BankAdmin admin;
 	
 	//for method inputs
 	private Scanner myObj = new Scanner(System.in);
@@ -34,13 +32,44 @@ public class BankCustomer implements ImpBanking
 	private double scandoub;
 	private int scanInt;
 	private static CustomerDAO cdao = new CustomerDAO();
+	private static JointDAO jdao = new JointDAO();
 	private BankCustomer hold;
+	
+	public BankCustomer(int accNum, String nfirst, String nLast, String uName, String passW, int rNum, double bal, double sBal,
+			int jNum, int validy)
+	{
+		accountNum = accNum;
+		firstName = nfirst;
+		lastName = nLast;
+		userName = uName;
+		passWord = passW;
+		routNum = rNum;
+		balance = bal;
+		saveBalance = sBal;
+		jointNum = jNum;
+		validAccount = validy;
+	}
+	
+	public BankCustomer(String nfirst, String nLast, double bal, int jNum)
+	{
+		
+	}
+	
+	public BankCustomer()
+	{
+		
+	}
+	
+	public String toString() {
+		return "accountNumber=" + accountNum + ", firstName=" + firstName + ", lastName=" + lastName
+				+ ", userName=" + userName + ", password=" + passWord + ", routNumber=" + routNum + ", balance="
+				+ balance + ", saveBalance=" + saveBalance + ", jointNumber=" + jointNum + ", validAccount="
+				+ validAccount ;
+	}
 	
 	@Override
 	public void accountMenu() 
 	{
-		admin = ProjectDriver.boss;
-		
 		//account menu for the customer who logged in(not for admin or employee)
 		System.out.println("please select an option:" + "\n" + "1- View account" + "  " + "2- Deposit amount" + "\n" + "3- Withdraw amount"
 				+ "  " + "4- Savings" + "\n" + "5- Joint account" + "  " + "6- log off");
@@ -81,10 +110,7 @@ public class BankCustomer implements ImpBanking
 	}
 	
 	public void openAccount()
-	{
-		//assigns values
-		admin = ProjectDriver.boss;
-		
+	{	
 		//sets up information for the new account
 		BankCustomer nCustomer = new BankCustomer();
 		System.out.println("Please Enter First name");
@@ -95,6 +121,12 @@ public class BankCustomer implements ImpBanking
 		nCustomer.lastName = input;
 		System.out.println("Please enter a username");
 		input = myObj.nextLine();
+		while(cdao.bIsCustomer(input))
+		{
+			System.out.println("That username is taken: ");
+			input = myObj.next();
+		}
+		
 		nCustomer.userName = input;
 		System.out.println("Please enter a password");
 		input = myObj.nextLine();
@@ -116,11 +148,11 @@ public class BankCustomer implements ImpBanking
 			nCustomer.routNum = RNG();
 		
 		//acc#, firstname, lastname, username, password, rout#, balance, savebalance, joint#, validation
-		cdao.setCustomer(new CustomerModel(nCustomer.accountNum, nCustomer.firstName, nCustomer.lastName, nCustomer.userName, nCustomer.passWord,
+		cdao.setCustomer(new BankCustomer(nCustomer.accountNum, nCustomer.firstName, nCustomer.lastName, nCustomer.userName, nCustomer.passWord,
 				nCustomer.routNum, 0.0, 0.0, nCustomer.jointNum, 2));
 		
-		//ProjectDriver.demo.info(nCustomer.userName +  " has created new account.");
-		cdao.setLog((CustomerModel)nCustomer, " has created new account.");
+		ProjectDriver.demo.info(nCustomer.userName +  " has created new account.");
+		cdao.setLog(nCustomer, " has created new account.");
 		ProjectDriver.LoginMenu();
 	}
 	
@@ -152,9 +184,9 @@ public class BankCustomer implements ImpBanking
 				balance -= scandoub;
 				
 				//updates information by casting customer to customer model
-				cdao.UpdateCustomer((CustomerModel)this);
-				//ProjectDriver.demo.info(userName +  " has deposited $" + scandoub + " into savings");
-				cdao.setLog((CustomerModel)this, " has deposited $" + scandoub + " into savings");
+				cdao.UpdateCustomer(this);
+				ProjectDriver.demo.info(userName +  " has deposited $" + scandoub + " into savings");
+				cdao.setLog(this, " has deposited $" + scandoub + " into savings");
 				System.out.println("The amount has been added to your account.");
 				openSavings();
 			}
@@ -174,9 +206,9 @@ public class BankCustomer implements ImpBanking
 			balance += scandoub;
 			
 			//updates information by casting customer to customer model
-			cdao.UpdateCustomer((CustomerModel)this);
-			//ProjectDriver.demo.info(userName +  " has deposited $" + scandoub + " into checkings");
-			cdao.setLog((CustomerModel)this, " has deposited $" + scandoub + " into checkings");
+			cdao.UpdateCustomer(this);
+			ProjectDriver.demo.info(userName +  " has deposited $" + scandoub + " into checkings");
+			cdao.setLog(this, " has deposited $" + scandoub + " into checkings");
 			System.out.println("The amount has been added to your account");
 			accountMenu();
 		}
@@ -222,8 +254,8 @@ public class BankCustomer implements ImpBanking
 			if(input.equalsIgnoreCase("Yes"))
 			{
 				cdao.setSavings(accountNum);
-				//ProjectDriver.demo.info(userName +  " has created new savings account.");
-				cdao.setLog((CustomerModel)this, " has created a new savings account");
+				ProjectDriver.demo.info(userName +  " has created new savings account.");
+				cdao.setLog(this, " has created a new savings account");
 				System.out.println("Savings account has been created.");
 				accountMenu();
 			}
@@ -234,7 +266,7 @@ public class BankCustomer implements ImpBanking
 	
 	private void openJoint() 
 	{
-		BankCustomer jc = cdao.searchJointCustomers(jointNum);
+		BankCustomer jc = jdao.searchJointCustomers(jointNum);
 		
 		if(jc != null)
 		{
@@ -258,10 +290,11 @@ public class BankCustomer implements ImpBanking
 				{
 					balance -= scandoub;
 					jc.balance += scandoub;
-					cdao.UpdateJoint((CustomerModel) jc);
-					cdao.UpdateCustomer((CustomerModel)this);
+					jdao.UpdateJoint(jc);
+					cdao.UpdateCustomer(this);
 					System.out.println("The amount has been deposited.");
-					cdao.setLog((CustomerModel)this, " has deposited $" + scandoub + " into joint account");
+					ProjectDriver.demo.info(userName +  " has deposited $" + scandoub + " into joint account");
+					cdao.setLog(this, " has deposited $" + scandoub + " into joint account");
 					openJoint();
 				}
 				else
@@ -278,10 +311,11 @@ public class BankCustomer implements ImpBanking
 				{
 					balance += scandoub;
 					jc.balance -= scandoub;
-					cdao.UpdateJoint((CustomerModel)jc);
-					cdao.UpdateCustomer((CustomerModel)this);
+					jdao.UpdateJoint(jc);
+					cdao.UpdateCustomer(this);
 					System.out.println("The amount has been withdrawn.");
-					cdao.setLog((CustomerModel)this, " has withdrawn $" + scandoub + " from joint account");
+					ProjectDriver.demo.info(userName +  " has withdrawn $" + scandoub + " from joint account");
+					cdao.setLog(this, " has withdrawn $" + scandoub + " from joint account");
 					openJoint();
 				}
 				else
@@ -306,11 +340,11 @@ public class BankCustomer implements ImpBanking
 			if(hold != null)
 			{
 				hold.jointNum = this.jointNum;
-				cdao.setJoint((CustomerModel)this);
-				cdao.UpdateCustomer((CustomerModel)hold);
+				jdao.setJoint(this);
+				cdao.UpdateCustomer(hold);
 				
-				//ProjectDriver.demo.info(userName +  " has created a joint account with " + hold.userName);
-				cdao.setLog((CustomerModel)this, " has created a joint account with " + hold.userName);
+				ProjectDriver.demo.info(userName +  " has created a joint account with " + hold.userName);
+				cdao.setLog(this, " has created a joint account with " + hold.userName);
 				openJoint();
 			}
 			else
@@ -337,9 +371,9 @@ public class BankCustomer implements ImpBanking
 				saveBalance -= scandoub;
 				balance += scandoub;
 				//updates information by casting customer to customer model
-				cdao.UpdateCustomer((CustomerModel)this);
-				//ProjectDriver.demo.info(userName +  " has withdrawn $" + scandoub + " from savings");
-				cdao.setLog((CustomerModel)this, " has withdrawn $" + scandoub + " from savings");
+				cdao.UpdateCustomer(this);
+				ProjectDriver.demo.info(userName +  " has withdrawn $" + scandoub + " from savings");
+				cdao.setLog(this, " has withdrawn $" + scandoub + " from savings");
 				System.out.println("The amount has been added to your account.");
 				openSavings();
 			}
@@ -360,10 +394,10 @@ public class BankCustomer implements ImpBanking
 			else
 			{
 				balance -= scandoub;
-				//updates information by casting customer to customer model
-				cdao.UpdateCustomer((CustomerModel)this);
-				//ProjectDriver.demo.info(userName +  " has withdrawn $" + scandoub + "  from checkings");
-				cdao.setLog((CustomerModel)this, " has withdrawn $" + scandoub + " from checkings");
+				//updates information of customer
+				cdao.UpdateCustomer(this);
+				ProjectDriver.demo.info(userName +  " has withdrawn $" + scandoub + "  from checkings");
+				cdao.setLog(this, " has withdrawn $" + scandoub + " from checkings");
 				System.out.println("The amount has been taken from your account");
 				accountMenu();
 			}

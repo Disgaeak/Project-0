@@ -3,6 +3,7 @@ package Revature.Project_0;
 import java.util.Scanner;
 
 import DataBase.CustomerDAO;
+import DataBase.JointDAO;
 import RevCustom.BankCustomer;
 
 public class BankEmployee extends BankAdmin
@@ -12,6 +13,7 @@ public class BankEmployee extends BankAdmin
 	private int scanInt;
 	private String input;
 	private CustomerDAO cdao = new CustomerDAO();
+	private JointDAO jdao = new JointDAO();
 	private BankCustomer c;
 	
 	public void accountMenu()
@@ -56,7 +58,7 @@ public class BankEmployee extends BankAdmin
 			if(c != null)
 			{
 				scanInt = c.jointNum;
-				c = cdao.searchJointCustomers(scanInt);
+				c = jdao.searchJointCustomers(scanInt);
 				if(c != null)
 					viewJoint(c);
 				else

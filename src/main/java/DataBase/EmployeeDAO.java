@@ -24,22 +24,19 @@ public class EmployeeDAO implements EmployeeDAO_I
 			pstmt.setInt(1, code);
 			
 			ResultSet rs = pstmt.executeQuery();
-			//create a list to store all of them
+			
+			//create a variable to store info of the employee/admin
 			BankAdmin ae = new BankAdmin();
-			while(rs.next())
+			if(rs.next())
 			{
-				if(rs.getInt("code") == code)
-				{
-					int bCode = rs.getInt("code");
-					String firstName = rs.getString("first_name");
-					String lastName = rs.getString("last_name");
-					LocalDate start = LocalDate.parse(rs.getString("start_date"));
-					double pay = rs.getDouble("hour_pay");
-					int validAccount = rs.getInt("lv");
-					
-					ae = new BankAdmin(bCode, firstName, lastName, start, pay, validAccount);
-					return ae;
-				}
+				ae.bankCode = rs.getInt("code");
+				ae.firstName = rs.getString("first_name");
+				ae.lastName = rs.getString("last_name");
+				ae.startDay = LocalDate.parse(rs.getString("start_date"));
+				ae.hrPay= rs.getDouble("hour_pay");
+				ae.lv = rs.getInt("lv");
+				
+				return ae;
 			}
 			
 			return null;
@@ -78,7 +75,8 @@ public class EmployeeDAO implements EmployeeDAO_I
 			e.printStackTrace();
 		}
 	}
-
+	
+	//checks if code belongs to employee(true) or admin(false)
 	public boolean bIsEmployee(int cm) 
 	{
 		try

@@ -23,15 +23,18 @@ public class CustomerController
 		
 		String co = ctx.pathParam("username");
 		
+		//selects the customer from the database
 		BankCustomer cm = dao.searchCustomers(co);
 		
 		if(cm != null)
 		{
-			ctx.status(200);
+			//confirms the customer is found
+			ctx.result("found customer");
 			ctx.json(cm);
 		}
 		else
 		{
+			//customer not found
 			ctx.status(404);
 		}
 	};
@@ -40,20 +43,35 @@ public class CustomerController
 		
 		BankCustomer cm = ctx.bodyAsClass(BankCustomer.class);
 		
+		//creates a new customer in the database
 		dao.setCustomer(cm);
+		ctx.result("Created a new customer account.");
 	};
 	
 	public static Handler putHandle = ctx ->{
 		BankCustomer cm = ctx.bodyAsClass(BankCustomer.class);
 		
-		dao.UpdateCustomer(cm);
+		if(cm != null)
+		{
+			//updates customer info in the database
+			dao.UpdateCustomer(cm);
+			ctx.result("updated customer info");
+		}
+		else
+			ctx.result("could not update");
 	};
 	
 	public static Handler deleteHandle = ctx ->{
 		String co = ctx.pathParam("username");
 		
-		dao.deleteCustomer(co);
-		ctx.result("found delete");
+		//removes a customer from the database
+		if(dao.bIsCustomer(co))
+		{
+			dao.deleteCustomer(co);
+			ctx.result("Deleted");
+		}
+		else
+			ctx.result("could not find customer");
 		
 	};
 }

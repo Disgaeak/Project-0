@@ -21,16 +21,15 @@ public class JointDAO implements JointDAO_I
 			Statement statement = cMan.createStatement();
 			ResultSet rs = statement.executeQuery("SELECT * FROM jointaccounts WHERE joint_num = " + jnum);
 			
-			//create a list to store all of them
+			//create a variable to store DB info
 			BankCustomer cust = new BankCustomer();
 			if(rs.next())
 			{
-				String firstName = rs.getString("first_name");
-				String lastName = rs.getString("last_name");
-				double balance = rs.getDouble("balance");
-				int jointNumber = rs.getInt("joint_num");
+				cust.firstName = rs.getString("first_name");
+				cust.lastName = rs.getString("last_name");
+				cust.balance = rs.getDouble("balance");
+				cust.jointNum = rs.getInt("joint_num");
 				
-				cust = new BankCustomer(firstName, lastName, balance, jointNumber);
 				return cust;
 			}
 			
@@ -50,7 +49,7 @@ public class JointDAO implements JointDAO_I
 			Connection cMan = ConnectManager.getConnect();
 			
 			//query to be executed
-			String query = "INSERT into jointaccounts (joint_num, first_name, last_name, balance)" + " values (?,?,?,?)";
+			String query = "INSERT into jointaccounts VALUES (?,?,?,?)";
 			
 			//creates a prepared statement
 			PreparedStatement pstmt = cMan.prepareStatement(query);

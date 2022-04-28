@@ -9,7 +9,7 @@ public interface CustomerDAO_I
 	//get all customers
 	public ArrayList<BankCustomer> getCustomers();
 	
-	//searches DB for a customer/employee/joint account
+	//searches DB for a customer
 	public BankCustomer searchCustomers(String user);
 	public BankCustomer searchCustomers();
 	

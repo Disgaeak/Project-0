@@ -19,6 +19,7 @@ public class BankEmployee extends BankAdmin
 	public void accountMenu()
 	{
 		//account menu for the employee
+		//being a child of the admin, there are many things handled by the admin class
 		System.out.println("please select an option:" + "\n" + "1- View account" + "\n" + "2- View customer account" + "\n" + "3- View customer Savings"
 				+ "\n" + "4- View Customer Joint Account" + "\n" + "5- View Applications" + "\n" + "6- log off");
 		scanInt = myObj.nextInt();

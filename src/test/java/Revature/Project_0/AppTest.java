@@ -1,20 +1,19 @@
 package Revature.Project_0;
 
 import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.Test;
 
-/**
- * Unit test for simple App.
- */
 public class AppTest 
 {
-    /**
-     * Rigorous Test :-)
-     */
+   TestClass tc = new TestClass();
+	
     @Test
-    public void shouldAnswerWithTrue()
+    public void addition()
     {
-        assertTrue( true );
+    	int x = TestClass.Deposit(30);
+    	
+    	assertTrue(x > 30);
     }
 }

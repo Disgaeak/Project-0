@@ -52,12 +52,12 @@ public class BankCustomer implements ImpBanking
 	
 	public BankCustomer(String nfirst, String nLast, double bal, int jNum)
 	{
-		
+		//this constructor is used for joint account info
 	}
 	
 	public BankCustomer()
 	{
-		
+		//blank constructor just in case
 	}
 	
 	public String toString() {
@@ -70,7 +70,7 @@ public class BankCustomer implements ImpBanking
 	@Override
 	public void accountMenu() 
 	{
-		//account menu for the customer who logged in(not for admin or employee)
+		//account menu for the customer who logged in
 		System.out.println("please select an option:" + "\n" + "1- View account" + "  " + "2- Deposit amount" + "\n" + "3- Withdraw amount"
 				+ "  " + "4- Savings" + "\n" + "5- Joint account" + "  " + "6- log off");
 		scanInt = myObj.nextInt();
@@ -103,7 +103,7 @@ public class BankCustomer implements ImpBanking
 	@Override
 	public void viewAccount() 
 	{
-		//account has been accepted
+		//view self info
 		System.out.println("First name: " + firstName + "\n" + "Last Name: " + lastName + "\n" + "username: " + userName + 
 				"\n" + "Account Number: " + accountNum + "\n" + "Routing Number: " + routNum + "\n" + "Balance: $" + balance);
 		accountMenu();
@@ -113,12 +113,18 @@ public class BankCustomer implements ImpBanking
 	{	
 		//sets up information for the new account
 		BankCustomer nCustomer = new BankCustomer();
+		
+		//user enters first name
 		System.out.println("Please Enter First name");
-		input = myObj.nextLine();  // Read user input
+		input = myObj.nextLine();  
 		nCustomer.firstName = input;
+		
+		//user enters last name
 		System.out.println("Please enter last name");
 		input = myObj.nextLine();
 		nCustomer.lastName = input;
+		
+		//user enters a username, it's checked if already exists
 		System.out.println("Please enter a username");
 		input = myObj.nextLine();
 		while(cdao.bIsCustomer(input))
@@ -126,8 +132,9 @@ public class BankCustomer implements ImpBanking
 			System.out.println("That username is taken: ");
 			input = myObj.next();
 		}
-		
 		nCustomer.userName = input;
+		
+		//user enters a password
 		System.out.println("Please enter a password");
 		input = myObj.nextLine();
 		nCustomer.passWord = input;
@@ -147,10 +154,13 @@ public class BankCustomer implements ImpBanking
 		while(cdao.getCustomers().contains(nCustomer.jointNum))
 			nCustomer.routNum = RNG();
 		
-		//acc#, firstname, lastname, username, password, rout#, balance, savebalance, joint#, validation
-		cdao.setCustomer(new BankCustomer(nCustomer.accountNum, nCustomer.firstName, nCustomer.lastName, nCustomer.userName, nCustomer.passWord,
-				nCustomer.routNum, 0.0, 0.0, nCustomer.jointNum, 2));
+		//this puts it in pending application
+		nCustomer.validAccount = 2;
 		
+		//adds customer to the database
+		cdao.setCustomer(nCustomer);
+		
+		//logs information
 		ProjectDriver.demo.info(nCustomer.userName +  " has created new account.");
 		cdao.setLog(nCustomer, " has created new account.");
 		ProjectDriver.LoginMenu();
@@ -162,7 +172,6 @@ public class BankCustomer implements ImpBanking
 		int min = 1000000;
 		int max = 9999999;
 		
-		//creates a unique account and routing number for the customer
 		n = (int) Math.floor(Math.random()*(max-min+1)+min);
 		
 		return n;
@@ -183,7 +192,7 @@ public class BankCustomer implements ImpBanking
 				saveBalance += scandoub;
 				balance -= scandoub;
 				
-				//updates information by casting customer to customer model
+				//updates information and logs it
 				cdao.UpdateCustomer(this);
 				ProjectDriver.demo.info(userName +  " has deposited $" + scandoub + " into savings");
 				cdao.setLog(this, " has deposited $" + scandoub + " into savings");
@@ -205,7 +214,7 @@ public class BankCustomer implements ImpBanking
 			
 			balance += scandoub;
 			
-			//updates information by casting customer to customer model
+			//updates information and logs it
 			cdao.UpdateCustomer(this);
 			ProjectDriver.demo.info(userName +  " has deposited $" + scandoub + " into checkings");
 			cdao.setLog(this, " has deposited $" + scandoub + " into checkings");
@@ -253,6 +262,7 @@ public class BankCustomer implements ImpBanking
 			
 			if(input.equalsIgnoreCase("Yes"))
 			{
+				//customer makes a new savings account and logs it
 				cdao.setSavings(accountNum);
 				ProjectDriver.demo.info(userName +  " has created new savings account.");
 				cdao.setLog(this, " has created a new savings account");
@@ -260,7 +270,7 @@ public class BankCustomer implements ImpBanking
 				accountMenu();
 			}
 			else
-				accountMenu();
+				accountMenu(); //customer doesn't want a savings account
 		}
 	}
 	

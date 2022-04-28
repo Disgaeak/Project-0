@@ -16,15 +16,17 @@ import DataBase.EmployeeDAO;
 
 public class ProjectDriver 
 {
-	private static BankCustomer customer = new BankCustomer();
+	//can be used by others
 	public static BankEmployee bE;
-	public static BankAdmin boss;
+	public static BankAdmin boss = new BankAdmin();
+	public static Logger demo = LogManager.getLogger(ProjectDriver.class);
+	
+	//this class only
+	private static BankCustomer customer = new BankCustomer();
 	private static String userName;
 	private static Scanner myObj = new Scanner(System.in); 
 	private static CustomerDAO cdao = new CustomerDAO();
 	private static EmployeeDAO edao = new EmployeeDAO();
-	
-	public static Logger demo = LogManager.getLogger(ProjectDriver.class);
 	
 	public static void main(String[] args) 
 	{	
@@ -51,8 +53,6 @@ public class ProjectDriver
 		//app.get("user", userHandle);
 	}
 	
-	public static Handler userHandle = ctx -> { ctx.result("Hello!!");};
-	
 	public static void LoginMenu()
 	{
 		String op1 = "open";
@@ -61,15 +61,19 @@ public class ProjectDriver
 		System.out.println("- Exception-al Bank Login Menu -" + "\n" + "Please Enter username or" + "\n" + "Type 'open' to open a new account.");
 		userName = myObj.nextLine();  // Read user input
 		
+		//checks who is logging in, first is they typed 'open'
 		if(userName.equalsIgnoreCase(op1))
 		{
 			customer.openAccount();
 		}
 		else if(cdao.bIsCustomer(userName))
 		{
+			//if not then check if it's a customers username.
+			
 			//gets customer with username
 			BankCustomer sc = cdao.searchCustomers(userName);
 			
+			//checks if the account is valid
 			switch(sc.validAccount)
 			{
 			case 0:
@@ -106,19 +110,26 @@ public class ProjectDriver
 			}
 			else
 			{
+				//if not then it must be an employee. Now checks if code is employee or admin
+				
 				int c = Integer.parseInt(userName);
+				
 				//have either employee or admin login and call respective acccount menu
 				if(edao.bIsEmployee(c))
 				{
 					//is employee aka lv equals 0
-					bE = (BankEmployee)edao.searchEmployee(c);
+					bE = boss.convertBA(edao.searchEmployee(c));
 					bE.accountMenu();
 				}
 				else
 				{
 					//is an Admin
 					boss = edao.searchEmployee(c);
-					boss.accountMenu();
+					
+					if(boss != null)
+						boss.accountMenu();
+					else
+						System.out.println("No one was found."); LoginMenu();
 				}
 			}
 		}

@@ -52,6 +52,7 @@ public class CustomerDAO implements CustomerDAO_I
 	}	
 	
 	//-----------------------------------------------------------Searchers-----------------------------------------------------------------
+	
 	//get one customer in the table
 	public BankCustomer searchCustomers(String user)
 	{
@@ -65,25 +66,26 @@ public class CustomerDAO implements CustomerDAO_I
 			pstmt.setString(1, user);
 			
 			ResultSet rs = pstmt.executeQuery();
-			//create a list to store all of them
+			
+			//gets info of the customer from the DB
 			BankCustomer cust = new BankCustomer();
 			if(rs.next())
 			{
-				int accountNumber = rs.getInt("account_num");
-				String firstName = rs.getString("first_name");
-				String lastName = rs.getString("last_name");
-				String userName = rs.getString("user_name");
-				String password = rs.getString("user_password");
-				int routNumber = rs.getInt("rout_num");
-				double balance = rs.getDouble("balance");
-				double saveBalance = rs.getDouble("save_balance");
-				int jointNumber = rs.getInt("joint_num");
-				int validAccount = rs.getInt("valid_aacount");
+				cust.accountNum = rs.getInt("account_num");
+				cust.firstName = rs.getString("first_name");
+				cust.lastName = rs.getString("last_name");
+				cust.userName = rs.getString("user_name");
+				cust.passWord = rs.getString("user_password");
+				cust.routNum = rs.getInt("rout_num");
+				cust.balance = rs.getDouble("balance");
+				cust.saveBalance = rs.getDouble("save_balance");
+				cust.jointNum = rs.getInt("joint_num");
+				cust.validAccount = rs.getInt("valid_aacount");
 				
-				cust = new BankCustomer(accountNumber, firstName, lastName, userName, password, routNumber, balance, saveBalance, jointNumber, validAccount);
 				return cust;
 			}
-			
+
+			//returns null if no one was found
 			return null;
 		}
 		catch(SQLException e)
@@ -103,27 +105,27 @@ public class CustomerDAO implements CustomerDAO_I
 			
 			//create a statement & result set
 			Statement statement = cMan.createStatement();
-			ResultSet rs = statement.executeQuery("SELECT * FROM Customers WHERE valid_account = 2");
+			ResultSet rs = statement.executeQuery("SELECT * FROM Customers WHERE valid_aacount = 2");
 			
-			//create a list to store all of them
+			//gets a customer whose account is pending
 			BankCustomer cust = new BankCustomer();
 			if(rs.next())
 			{
-				int accountNumber = rs.getInt("account_num");
-				String firstName = rs.getString("first_name");
-				String lastName = rs.getString("last_name");
-				String userName = rs.getString("user_name");
-				String password = rs.getString("user_password");
-				int routNumber = rs.getInt("rout_num");
-				double balance = rs.getDouble("balance");
-				double saveBalance = rs.getDouble("save_balance");
-				int jointNumber = rs.getInt("joint_num");
-				int validAccount = rs.getInt("valid_aacount");
+				cust.accountNum = rs.getInt("account_num");
+				cust.firstName = rs.getString("first_name");
+				cust.lastName = rs.getString("last_name");
+				cust.userName = rs.getString("user_name");
+				cust.passWord = rs.getString("user_password");
+				cust.routNum = rs.getInt("rout_num");
+				cust.balance = rs.getDouble("balance");
+				cust.saveBalance = rs.getDouble("save_balance");
+				cust.jointNum = rs.getInt("joint_num");
+				cust.validAccount = rs.getInt("valid_aacount");
 				
-				cust = new BankCustomer(accountNumber, firstName, lastName, userName, password, routNumber, balance, saveBalance, jointNumber, validAccount);
 				return cust;
 			}
 			
+			//returns null if no account is pending
 			return null;
 		}
 		catch(SQLException e)
@@ -136,6 +138,7 @@ public class CustomerDAO implements CustomerDAO_I
 	//------------------------------------------------End of Searches ------------------------------------------------------------------------------------
 	
 	//------------------------------------------------Setters -------------------------------------------------------------------------------------
+	
 	//adds a customer to the DB
 	public void setCustomer(BankCustomer NC)
 	{
@@ -144,12 +147,12 @@ public class CustomerDAO implements CustomerDAO_I
 			Connection cMan = ConnectManager.getConnect();
 			
 			//query to be executed
-			String query = "INSERT into Customers (account_num, first_name, last_name, user_name, user_password, rout_num, balance, save_balance,"
-					+ " joint_num, valid_aacount)" + " values (?,?,?,?,?,?,?,?,?,?)";
+			String query = "INSERT into Customers VALUES (?,?,?,?,?,?,?,?,?,?)";
 			
 			//creates a prepared statement
 			PreparedStatement pstmt = cMan.prepareStatement(query);
 			
+			//assigns the customer info to the DB
 			pstmt.setInt(1, NC.accountNum);
 			pstmt.setString(2, NC.firstName);
 			pstmt.setString(3, NC.lastName);
@@ -174,10 +177,11 @@ public class CustomerDAO implements CustomerDAO_I
 	{
 		try
 		{
+			//saves the customers savings balance in the DB
 			Connection cMan = ConnectManager.getConnect();
 			
 			//query to be executed
-			String query = "INSERT into savings (account, balance)" + " values (?,?)";
+			String query = "INSERT into savings (account, balance)" + " VALUES (?,?)";
 			
 			//creates a prepared statement
 			PreparedStatement pstmt = cMan.prepareStatement(query);
@@ -250,6 +254,7 @@ public class CustomerDAO implements CustomerDAO_I
 	{
 		try
 		{
+			//checks if username is currently in DB
 			Connection cMan = ConnectManager.getConnect();
 
 			//create a statement & result set
@@ -260,6 +265,7 @@ public class CustomerDAO implements CustomerDAO_I
 			ResultSet rs = pstmt.executeQuery();
 			if(rs.next())
 			{
+				//found a customer with username
 				return true;
 			}
 			
@@ -274,6 +280,7 @@ public class CustomerDAO implements CustomerDAO_I
 	{
 		try
 		{
+			//checks if customer has a savings account
 			Connection cMan = ConnectManager.getConnect();
 		
 			//create a statement & result set
@@ -303,6 +310,7 @@ public class CustomerDAO implements CustomerDAO_I
 	{
 		try
 		{
+			//Updates customer information to the database
 			Connection cMan = ConnectManager.getConnect();
 			
 			//query to be executed
@@ -312,6 +320,7 @@ public class CustomerDAO implements CustomerDAO_I
 			//creates a prepared statement
 			PreparedStatement pstmt = cMan.prepareStatement(query);
 			
+			//sets all values even if it didn't change
 			pstmt.setString(1, cm.firstName);
 			pstmt.setString(2, cm.lastName);
 			pstmt.setString(3, cm.userName);
@@ -337,6 +346,7 @@ public class CustomerDAO implements CustomerDAO_I
 	{
 		try
 		{
+			//removes a customer from the DB  *not actually used.
 			Connection cMan = ConnectManager.getConnect();
 			
 			//query to be executed
@@ -353,6 +363,5 @@ public class CustomerDAO implements CustomerDAO_I
 		{
 			e.printStackTrace();
 		}
-		
 	}
 }

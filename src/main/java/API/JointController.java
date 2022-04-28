@@ -1,6 +1,5 @@
 package API;
 
-import DataBase.CustomerDAO;
 import DataBase.JointDAO;
 import RevCustom.BankCustomer;
 import io.javalin.Javalin;
@@ -24,15 +23,18 @@ public class JointController
 		
 		String co = ctx.pathParam("code");
 		
+		//searches for the joint account of customer
 		BankCustomer cm = dao.searchJointCustomers(Integer.parseInt(co));
 		
 		if(cm != null)
 		{
+			//customer has a joint account
 			ctx.status(200);
 			ctx.json(cm);
 		}
 		else
 		{
+			//customer doesn't have a joint account
 			ctx.status(404);
 		}
 	};
@@ -41,18 +43,21 @@ public class JointController
 		
 		BankCustomer cm = ctx.bodyAsClass(BankCustomer.class);
 		
+		//inserts a new joint account in database
 		dao.setJoint(cm);
 	};
 	
 	public static Handler putHandle = ctx ->{
 		BankCustomer cm = ctx.bodyAsClass(BankCustomer.class);
 		
+		//updates customer joint account information
 		dao.UpdateJoint(cm);
 	};
 	
 	public static Handler deleteHandle = ctx ->{
 		BankCustomer cm = ctx.bodyAsClass(BankCustomer.class);
 		
+		//removes customer's joint account
 		dao.deleteJoint(cm);
 	};
 }

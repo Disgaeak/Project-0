@@ -11,7 +11,22 @@ public class TestClass
 			return balance + i;
 		} catch (Exception e) 
 		{
-			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return i;
+	}
+
+	public static int withdraw(int i) 
+	{
+		try 
+		{
+			if(i > balance)
+			{
+				return 0;
+			}
+			return balance - i;
+		} catch (Exception e) 
+		{
 			e.printStackTrace();
 		}
 		return i;

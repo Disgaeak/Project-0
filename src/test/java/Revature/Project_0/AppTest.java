@@ -3,7 +3,7 @@ package Revature.Project_0;
 import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class AppTest 
 {
@@ -15,5 +15,13 @@ public class AppTest
     	int x = TestClass.Deposit(30);
     	
     	assertTrue(x > 30);
+    }
+    
+    @Test
+    public void subtract()
+    {
+    	int x = TestClass.withdraw(13);
+    	
+    	assertTrue(x == 0);
     }
 }

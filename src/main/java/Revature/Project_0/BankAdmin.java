@@ -324,7 +324,7 @@ public class BankAdmin implements ImpBanking
 	{
 		// ability for admin to make changes on a customer's account
 		System.out.println("What would you like to change?:" + "\n" + "1- Name" + "   " + "2- Username / password"+ "\n" + "3- Balance" + 
-				"   " + "4- Savings Balance" + "\n" + "5- Joint balance" + "   " + "6- Validation" + "\n" + "7- Return to menu");
+				"   " + "4- Savings Balance" + "\n" + "5- Joint balance" + "   " + "6- Wire transfer" + "\n" + "7- Validation" + "   " + "8- Return to Menu");
 				scanInt = myObj.nextInt();
 				
 		switch(scanInt)
@@ -399,6 +399,29 @@ public class BankAdmin implements ImpBanking
 			}
 			break;
 		case 6:
+			System.out.println("Please Enter the username from whom to take the money: ");
+			input = myObj.next();
+			
+			System.out.println("Please enter the username to give the money to: ");
+			String inTwo = myObj.next();
+			
+			c = cdao.searchCustomers(input);
+			BankCustomer cTwo = cdao.searchCustomers(inTwo);
+			
+			if(c != null && cTwo != null)
+			{
+				System.out.println("Enter the amount you wish to transfer: ");
+				scandoub = myObj.nextDouble();
+				
+				wireTransfer(c, cTwo, scandoub);
+			}
+			else
+			{
+				System.out.println("Error: could not find customer.");
+			}
+			
+			break;
+		case 7:
 			//changes the validation of the customer account
 			System.out.println("Valid: 0 = Deny, 1 = valid, 2 = pending" + "\n"
 					+ "Current Validation is: "  + cust.validAccount + "\n" + "Enter new validation: ");
@@ -424,7 +447,7 @@ public class BankAdmin implements ImpBanking
 					accountMenu();
 			}
 			break;
-		case 7:
+		case 8:
 			accountMenu();
 			break;
 			default:
@@ -484,5 +507,23 @@ public class BankAdmin implements ImpBanking
 		n = (int) Math.floor(Math.random()*(max-min+1)+min);
 		
 		return n;
+	}
+	
+	private void wireTransfer(BankCustomer A, BankCustomer B, double amt)
+	{
+		//transfers money from A to B
+		if(amt < A.balance && amt > 0)
+		{
+			A.balance -= amt;
+			B.balance += amt;
+			
+			cdao.UpdateCustomer(B);
+			cdao.UpdateCustomer(A);
+			cdao.setLog(bankCode, " has transfered $" + amt + " from " + A.userName + " to " + B.userName);
+			ProjectDriver.demo.info(bankCode + " has transfered $" + amt + " from " + A.userName + " to " + B.userName);
+			System.out.println("Success ");
+		}
+		else
+			System.out.println("Insufficient funds to transfer");
 	}
 }
